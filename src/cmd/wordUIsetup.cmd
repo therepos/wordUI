@@ -2,8 +2,8 @@
 setlocal EnableExtensions
 
 :: Sanity: required files must be beside this cmd
-if not exist "%~dp0excelUI.xlam" (
-  echo Missing excelUI.xlam next to setup.cmd
+if not exist "%~dp0wordUI.dotm" (
+  echo Missing wordUI.dotm next to setup.cmd
   pause
   exit /b 1
 )
@@ -33,21 +33,21 @@ param([string]$SourceDirOverride)
 # ================= SETUP =================
 $ErrorActionPreference = 'Stop'
 $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
-$Host.UI.RawUI.WindowTitle = 'excelUI setup'
+$Host.UI.RawUI.WindowTitle = 'wordUI setup'
 # ========================================
 
 <# 
 Excel Add-in Installer/Uninstaller (single file)
 - Copies to C:\Apps (creates if missing)
 - Adds Excel Trusted Location (HKCU for 16.0/15.0/14.0 if present)
-- Loads/Unloads .xlam via COM; falls back to Excel OPEN registry if COM fails
+- Loads/Unloads .dotm via COM; falls back to Excel OPEN registry if COM fails
 - Aligned status; stops on copy failure
 #>
 
 # ===== CONFIG =====
 $TargetDir      = 'C:\Apps'
-$FilesToInstall = @('excelUI.xlam')
-$AddInFile      = 'excelUI.xlam'
+$FilesToInstall = @('wordUI.dotm')
+$AddInFile      = 'wordUI.dotm'
 $TrustedDesc    = 'Installer-Managed: Apps XL Add-in'
 # ==================
 
