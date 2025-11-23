@@ -15,7 +15,7 @@ wordUI
 │   └── bas
 │   └── cmd
 │   └── dotm
-├── temp
+├── tmp
 ├── .gitignore
 ├── LICENSE
 └── README.md

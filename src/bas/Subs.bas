@@ -22,25 +22,40 @@ End Sub
 
 Sub FormatSelectedTableBorders()
     Dim Tbl As Table
-    Dim brd As Border
-    
-    ' Check if selection is inside a table
-    If Selection.Information(wdWithInTable) Then
-        Set Tbl = Selection.Tables(1)
-        
-        ' Apply borders to all sides and internal lines
-        With Tbl
-            ' Loop through all borders
-            For Each brd In .Borders
-                brd.LineStyle = wdLineStyleSingle   ' Solid line
-                brd.Color = wdColorAutomatic        ' Automatic color
-                brd.LineWidth = wdLineWidth025pt    ' ½ pt width
-            Next brd
-        End With
-    Else
+    Dim bTypes As Variant
+    Dim i As Long
+
+    If Not Selection.Information(wdWithInTable) Then
         MsgBox "Please place the cursor inside a table.", vbExclamation
+        Exit Sub
     End If
+
+    Set Tbl = Selection.Tables(1)
+
+    ' Only these borders (no diagonals)
+    bTypes = Array( _
+        wdBorderLeft, _
+        wdBorderRight, _
+        wdBorderTop, _
+        wdBorderBottom, _
+        wdBorderHorizontal, _
+        wdBorderVertical)
+
+    With Tbl
+        For i = LBound(bTypes) To UBound(bTypes)
+            With .Borders(bTypes(i))
+                .LineStyle = wdLineStyleSingle
+                .Color = wdColorAutomatic
+                .LineWidth = wdLineWidth025pt
+            End With
+        Next i
+
+        ' make sure diagonals are off
+        .Borders(wdBorderDiagonalDown).LineStyle = wdLineStyleNone
+        .Borders(wdBorderDiagonalUp).LineStyle = wdLineStyleNone
+    End With
 End Sub
+
 
 Sub FormatAllFontsEYInterstateLight()
     Dim para As Paragraph
@@ -114,7 +129,7 @@ lbl_Exit:
     
 End Sub
 
-Sub ClearTableStyles(control As IRibbonControl)
+Sub ClearTableStyles()
 '   Purpose: Clear table styles
 
     Dim objTable As Table
@@ -134,7 +149,7 @@ Sub ClearTableStyles(control As IRibbonControl)
   
 End Sub
 
-Sub CopyHyperlink(control As IRibbonControl)
+Sub CopyHyperlink()
 '   Purpose: Copy hyperlinks
 '   Reference: https://www.msofficeforums.com/word-vba/38223-how-extract-selected-hyperlink-address-clipboard.html
 '   Reference: https://software-solutions-online.com/word-vba-move-cursor-to-end-of-document/
@@ -176,7 +191,7 @@ Sub CopyHyperlink(control As IRibbonControl)
      
 End Sub
 
-Sub Document_ContentControlOnExit(control As IRibbonControl, ByVal ContentControl As ContentControl, Cancel As Boolean)
+Sub Document_ContentControlOnExit(, ByVal ContentControl As ContentControl, Cancel As Boolean)
 '   Purpose: Change Textbox content as Dropdown List change.
 
     Dim oCC As ContentControl
@@ -210,7 +225,7 @@ lbl_Exit:
     
 End Sub
 
-Sub EditLinks(control As IRibbonControl)
+Sub EditLinks()
 '   Purpose: Edit hyperlinks
 '   Reference: https://stackoverflow.com/questions/3355266/how-to-programmatically-edit-all-hyperlinks-in-a-word-document
 '   Reference: http://msdn.microsoft.com/en-us/library/microsoft.office.interop.word.hyperlink_members.aspx
@@ -229,7 +244,7 @@ Sub EditLinks(control As IRibbonControl)
     
 End Sub
 
-Sub InsertReference(control As IRibbonControl)
+Sub InsertReference()
 '   Purpose: Paste clipboard content as hyperlink
 '   References: https://www.slipstick.com/developer/code-samples/paste-clipboard-contents-vba/
 '   Notes:
@@ -264,7 +279,7 @@ Sub InsertReference(control As IRibbonControl)
     
 End Sub
 
-Sub InsertSymbol(control As IRibbonControl)
+Sub InsertSymbol()
 '   Purpose: Insert symbol for reference
 
     Application.ScreenUpdating = False
@@ -273,7 +288,7 @@ Sub InsertSymbol(control As IRibbonControl)
         
 End Sub
 
-Sub KillTheHyperlinks(control As IRibbonControl)
+Sub KillTheHyperlinks()
 '   Purpose: Removes all hyperlinks from the document
 
     With ThisDocument
@@ -285,7 +300,7 @@ Sub KillTheHyperlinks(control As IRibbonControl)
     
 End Sub
 
-Sub KillTheHyperlinksInAllOpenDocuments(control As IRibbonControl)
+Sub KillTheHyperlinksInAllOpenDocuments()
 '   Purpose: Removes all hyperlinks from all opened document
 
     Dim doc As Document
@@ -303,7 +318,7 @@ Sub KillTheHyperlinksInAllOpenDocuments(control As IRibbonControl)
     
 End Sub
 
-Sub OpenEmbeddedExcelInWord(control As IRibbonControl)
+Sub OpenEmbeddedExcelInWord()
 '   Purpose: Remove LockAspectRatio from linked Excel objects
 
     Dim shp As InlineShape
@@ -317,7 +332,7 @@ Sub OpenEmbeddedExcelInWord(control As IRibbonControl)
     
 End Sub
 
-Sub RemoveContentControl(control As IRibbonControl)
+Sub RemoveContentControl()
 '   Purpose: Remove all content controls
     
     Dim oRng As Range
@@ -344,7 +359,7 @@ Sub RemoveContentControl(control As IRibbonControl)
     
 End Sub
 
-Sub RemoveCrossReferences(control As IRibbonControl)
+Sub RemoveCrossReferences()
 '   Purpose: Remove all cross-references
 
     Dim fld As Field
@@ -356,7 +371,7 @@ Sub RemoveCrossReferences(control As IRibbonControl)
  
 End Sub
 
-Sub ResetObject(control As IRibbonControl)
+Sub ResetObject()
 '   Purpose: Reset WorkbookObject sizes
 
     Dim shp As InlineShape
@@ -370,7 +385,7 @@ Sub ResetObject(control As IRibbonControl)
     
 End Sub
 
-Sub ResizeImage(control As IRibbonControl)
+Sub ResizeImage()
 '   Purpose: Resize selected image
 '   Source: https://www.extendoffice.com/documents/word/1207-word-resize-all-multiple-images.html
 
@@ -396,7 +411,7 @@ Sub ResizeImage(control As IRibbonControl)
     
 End Sub
 
-Sub SetPageLayout(control As IRibbonControl)
+Sub SetPageLayout()
 '   Purpose: Set page margin and edge distance
 
     With ActiveDocument.PageSetup
@@ -412,7 +427,7 @@ Sub SetPageLayout(control As IRibbonControl)
 
 End Sub
 
-Sub SetParagraph(control As IRibbonControl)
+Sub SetParagraph()
 '   Purpose: Set paragraph spacing
 
     Selection.WholeStory
@@ -445,7 +460,7 @@ Sub SetParagraph(control As IRibbonControl)
   
 End Sub
 
-Sub SetTablesBordersColor(control As IRibbonControl, varColor As Long)
+Sub SetTablesBordersColor(, varColor As Long)
 '   Purpose: Standardise all table borders color in a document at 1/2 pt single-line
 
     Application.ScreenUpdating = False
@@ -465,7 +480,7 @@ Sub SetTablesBordersColor(control As IRibbonControl, varColor As Long)
 
 End Sub
 
-Sub SetTablesMargin(control As IRibbonControl, varPadding As Double)
+Sub SetTablesMargin(, varPadding As Double)
 '   Purpose: Standardise all table paddings in a document
 '   varPadding: Measured in centimeters
 '   Notes:
@@ -487,7 +502,7 @@ Sub SetTablesMargin(control As IRibbonControl, varPadding As Double)
     
 End Sub
 
-Sub SplitVertically(control As IRibbonControl)
+Sub SplitVertically()
 '   Purpose: Split WORD active window vertically to view side by side
 '   Source: https://dharma-records.buddhasasana.net/computing/ms-word-split-windows-vertically
  
@@ -590,7 +605,7 @@ TheEnd:
          
 End Sub
 
-Sub StyleKill(control As IRibbonControl)
+Sub StyleKill()
 '   Purpose: Delete unwanted styles
 '   Source: https://word.tips.net/T001337_Removing_Unused_Styles.html
 
