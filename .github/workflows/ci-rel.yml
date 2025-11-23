@@ -1,5 +1,5 @@
 # .github/workflows/release-wordUI.yml
-name: Release-wordUI
+name: Release
 on:
   push:
     branches: [ main ]
