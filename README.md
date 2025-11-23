@@ -9,13 +9,12 @@
 wordUI
 ├── .github
 │   └── workflows
-│       ├── release-exceladdin.yml
-│       └── release-wordUI.yml
-├── apps
-│   ├── bas
-│   ├── cmd
-│   └── dotm
+├── bin
+├── docs
 ├── src
+│   └── bas
+│   └── cmd
+│   └── dotm
 ├── temp
 ├── .gitignore
 ├── LICENSE
