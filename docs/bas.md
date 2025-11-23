@@ -2,62 +2,32 @@
 
 _This file is generated automatically from `.bas` files in `src/bas`._
 
-## Module `AllFontSizesMinusOne`
+## Module `Ribbon`
 
-### `AllFontSizesMinusOne`
+### `RibbonOnLoad`
 
 ```vbnet
-Sub AllFontSizesMinusOne()
-    Dim para As Paragraph
-    Dim rng As Range
-    
-    ' Loop through all paragraphs
-    For Each para In ActiveDocument.Paragraphs
-        Set rng = para.Range
-        
-        ' Reduce font size by 1 point if greater than 1
-        If rng.Font.Size > 1 Then
-            rng.Font.Size = rng.Font.Size - 1
-        End If
-    Next para
+Public Sub RibbonOnLoad(r As IRibbonUI)
+    Set Ribbon = r
 End Sub
 ```
 
-## Module `AllFontSizesPlusOne`
-
-### `AllFontSizesPlusOne`
+### `RunByName`
 
 ```vbnet
-Sub AllFontSizesPlusOne()
-    Dim para As Paragraph
-    Dim rng As Range
-    
-    ' Loop through all paragraphs
-    For Each para In ActiveDocument.Paragraphs
-        Set rng = para.Range
-        ' Increase font size by 1 point
-        rng.Font.Size = rng.Font.Size + 1
-    Next para
+Public Sub RunByName(control As IRibbonControl)
+    Dim macro As String
+    macro = control.Tag
+    If Len(macro) = 0 Then macro = control.ID
+    On Error GoTo errh
+    Application.Run macro
+    Exit Sub
+errh:
+    MsgBox "Macro not found: " & macro, vbExclamation
 End Sub
 ```
 
-## Module `FormatAllFontsEYInterstateLight`
-
-### `FormatAllFontsEYInterstateLight`
-
-```vbnet
-Sub FormatAllFontsEYInterstateLight()
-    Dim para As Paragraph
-    
-    ' Loop through all paragraphs in the document
-    For Each para In ActiveDocument.Paragraphs
-        para.Range.Font.Name = "EYInterstate Light"
-        para.Range.Font.Size = 11
-    Next para
-End Sub
-```
-
-## Module `FormatDocTable`
+## Module `Subs`
 
 ### `FormatDocTable`
 
@@ -84,8 +54,6 @@ Sub FormatDocTable()
 End Sub
 ```
 
-## Module `FormatSelectedTableBorders`
-
 ### `FormatSelectedTableBorders`
 
 ```vbnet
@@ -103,11 +71,60 @@ Sub FormatSelectedTableBorders()
             For Each brd In .Borders
                 brd.LineStyle = wdLineStyleSingle   ' Solid line
                 brd.Color = wdColorAutomatic        ' Automatic color
-                brd.LineWidth = wdLineWidth025pt    ' ½ pt width
+                brd.LineWidth = wdLineWidth025pt    '  pt width
             Next brd
         End With
     Else
         MsgBox "Please place the cursor inside a table.", vbExclamation
     End If
+End Sub
+```
+
+### `FormatAllFontsEYInterstateLight`
+
+```vbnet
+Sub FormatAllFontsEYInterstateLight()
+    Dim para As Paragraph
+    
+    ' Loop through all paragraphs in the document
+    For Each para In ActiveDocument.Paragraphs
+        para.Range.Font.Name = "EYInterstate Light"
+        para.Range.Font.Size = 11
+    Next para
+End Sub
+```
+
+### `AllFontSizesMinusOne`
+
+```vbnet
+Sub AllFontSizesMinusOne()
+    Dim para As Paragraph
+    Dim rng As Range
+    
+    ' Loop through all paragraphs
+    For Each para In ActiveDocument.Paragraphs
+        Set rng = para.Range
+        
+        ' Reduce font size by 1 point if greater than 1
+        If rng.Font.Size > 1 Then
+            rng.Font.Size = rng.Font.Size - 1
+        End If
+    Next para
+End Sub
+```
+
+### `AllFontSizesPlusOne`
+
+```vbnet
+Sub AllFontSizesPlusOne()
+    Dim para As Paragraph
+    Dim rng As Range
+    
+    ' Loop through all paragraphs
+    For Each para In ActiveDocument.Paragraphs
+        Set rng = para.Range
+        ' Increase font size by 1 point
+        rng.Font.Size = rng.Font.Size + 1
+    Next para
 End Sub
 ```
