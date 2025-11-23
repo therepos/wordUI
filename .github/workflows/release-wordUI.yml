@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - src/xlam/wordUI.xlam
+      - src/dotm/wordUI.dotm
       - src/cmd/wordUIsetup.cmd
 jobs:
   release:
@@ -23,7 +23,7 @@ jobs:
       - run: >
           New-Item -ItemType Directory -Force -Path src\rel | Out-Null;
           Compress-Archive -Path
-          src\xlam\wordUI.xlam,src\cmd\wordUIsetup.cmd
+          src\dotm\wordUI.dotm,src\cmd\wordUIsetup.cmd
           -DestinationPath src\rel\wordUI.zip -Force
       - uses: softprops/action-gh-release@v2
         with:
