@@ -1,20 +1,20 @@
-# ExcelUI Add-in
+# wordUI Add-in
 ---
 ## How to Use
-1. Download the latest [release](https://github.com/therepos/excelUI/releases/excelUI/latest/download/excelUI.zip). 
-2. Install with excelUIsetup.cmd
+1. Download the latest [release](https://github.com/therepos/wordUI/releases/wordUI/latest/download/wordUI.zip). 
+2. Install with wordUIsetup.cmd
 
 ## Structure
 ```
-excelUI
+wordUI
 ├── .github
 │   └── workflows
 │       ├── release-exceladdin.yml
-│       └── release-excelUI.yml
+│       └── release-wordUI.yml
 ├── apps
 │   ├── bas
 │   ├── cmd
-│   └── xlam
+│   └── dotm
 ├── src
 ├── temp
 ├── .gitignore
