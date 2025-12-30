@@ -9,16 +9,12 @@
 wordUI
 ├── .github
 │   └── workflows
-├── bin
 ├── docs
 ├── src
 │   └── bas
 │   └── cmd
 │   └── dotm
-├── tmp
-├── .gitignore
-├── LICENSE
-└── README.md
+└── tmp
 
 ```
 
