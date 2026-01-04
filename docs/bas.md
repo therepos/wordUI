@@ -135,6 +135,19 @@ Sub FormatSelectedTableBorders()
 End Sub
 ```
 
+### `FormatAllFontsArial`
+
+```vbnet
+Sub FormatAllFontsArial()
+    Dim para As Paragraph
+    
+    ' Loop through all paragraphs in the document
+    For Each para In ActiveDocument.Paragraphs
+        para.Range.Font.Name = "Arial"
+    Next para
+End Sub
+```
+
 ### `FormatAllFontsEYInterstateLight`
 
 ```vbnet
@@ -144,7 +157,6 @@ Sub FormatAllFontsEYInterstateLight()
     ' Loop through all paragraphs in the document
     For Each para In ActiveDocument.Paragraphs
         para.Range.Font.Name = "EYInterstate Light"
-        para.Range.Font.Size = 11
     Next para
 End Sub
 ```
