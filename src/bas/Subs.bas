@@ -23,6 +23,10 @@ End Sub
 
 Sub FormatSelectedTableMargins()
     Dim tbl As Table
+    Const PAD_TOP_CM As Double = 0.05
+    Const PAD_BOTTOM_CM As Double = 0.05
+    Const PAD_LEFT_CM As Double = 0.19
+    Const PAD_RIGHT_CM As Double = 0.19
 
     If Selection.Information(wdWithInTable) Then
         ' Prefer resolving via selected cell if available
@@ -38,10 +42,10 @@ Sub FormatSelectedTableMargins()
         End If
         
         With tbl
-            .TopPadding = Application.CentimetersToPoints(0.05)
-            .BottomPadding = Application.CentimetersToPoints(0.05)
-            .LeftPadding = Application.CentimetersToPoints(0.19)
-            .RightPadding = Application.CentimetersToPoints(0.19)
+            .TopPadding = Application.CentimetersToPoints(PAD_TOP_CM)
+            .BottomPadding = Application.CentimetersToPoints(PAD_BOTTOM_CM)
+            .LeftPadding = Application.CentimetersToPoints(PAD_LEFT_CM)
+            .RightPadding = Application.CentimetersToPoints(PAD_RIGHT_CM)
             
             ' Optional:
             ' .CellSpacing = 0
