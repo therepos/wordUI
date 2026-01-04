@@ -20,6 +20,40 @@ Sub FormatDocTable()
     Next Tbl
 End Sub
 
+
+Sub FormatSelectedTableMargins()
+    Dim tbl As Table
+
+    If Selection.Information(wdWithInTable) Then
+        ' Prefer resolving via selected cell if available
+        If Selection.Cells.Count > 0 Then
+            ' Parent table of the first selected cell
+            Set tbl = Selection.Cells(1).Range.Tables(1)
+        ElseIf Selection.Range.Tables.Count > 0 Then
+            ' Innermost table within the current selection range
+            Set tbl = Selection.Range.Tables(Selection.Range.Tables.Count)
+        Else
+            MsgBox "Couldn't resolve the table from the selection.", vbExclamation
+            Exit Sub
+        End If
+        
+        With tbl
+            .TopPadding = Application.CentimetersToPoints(0.05)
+            .BottomPadding = Application.CentimetersToPoints(0.05)
+            .LeftPadding = Application.CentimetersToPoints(0.19)
+            .RightPadding = Application.CentimetersToPoints(0.19)
+            
+            ' Optional:
+            ' .CellSpacing = 0
+            ' .AllowAutoFit = False
+        End With
+        
+        MsgBox "Cell margins (padding) applied to the selected (innermost) table.", vbInformation
+    Else
+        MsgBox "Place the cursor inside the table you want to format, then run the macro.", vbExclamation
+    End If
+End Sub
+
 Sub FormatSelectedTableBorders()
     Dim Tbl As Table
     Dim bTypes As Variant
