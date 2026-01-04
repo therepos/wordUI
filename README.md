@@ -2,6 +2,7 @@
 
 1. Download the latest [release](https://github.com/therepos/wordUI/releases/wordUI/latest/download/wordUI.zip). 
 2. Install with wordUIsetup.cmd
+3. The addin can be located at `%APPDATA%\Microsoft\Word\Startup`.
 
 ## Structure
 
