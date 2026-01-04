@@ -20,7 +20,6 @@ Sub FormatDocTable()
     Next Tbl
 End Sub
 
-
 Sub FormatSelectedTableMargins()
     Dim tbl As Table
     Const PAD_TOP_CM As Double = 0.05
@@ -94,6 +93,14 @@ Sub FormatSelectedTableBorders()
     End With
 End Sub
 
+Sub FormatAllFontsArial()
+    Dim para As Paragraph
+    
+    ' Loop through all paragraphs in the document
+    For Each para In ActiveDocument.Paragraphs
+        para.Range.Font.Name = "Arial"
+    Next para
+End Sub
 
 Sub FormatAllFontsEYInterstateLight()
     Dim para As Paragraph
@@ -101,7 +108,6 @@ Sub FormatAllFontsEYInterstateLight()
     ' Loop through all paragraphs in the document
     For Each para In ActiveDocument.Paragraphs
         para.Range.Font.Name = "EYInterstate Light"
-        para.Range.Font.Size = 11
     Next para
 End Sub
 
