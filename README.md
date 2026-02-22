@@ -19,11 +19,8 @@ wordUI
 
 ```
 
-## Notes
-
-- This work is licensed under [MIT](https://choosealicense.com/licenses/mit/). 
-
 ## Resources
 
 - [Office RibbonX Editor](https://github.com/fernandreu/office-ribbonx-editor)
 - [ImageMSO Gallery](https://bert-toolkit.com/imagemso-list.html)
+
