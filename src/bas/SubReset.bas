@@ -189,7 +189,7 @@ End Sub
 
 Private Sub ResetHyperlinks()
     With ActiveDocument
-        While .Hyperlinks.Count > 0
+        While .Hyperlinks.count > 0
             .Hyperlinks(1).Delete
         Wend
     End With

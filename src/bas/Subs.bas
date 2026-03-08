@@ -187,10 +187,10 @@ Sub SelTableMargin()
 
     If Selection.Information(wdWithInTable) Then
 
-        If Selection.Cells.Count > 0 Then
+        If Selection.Cells.count > 0 Then
             Set tbl = Selection.Cells(1).Range.Tables(1)
-        ElseIf Selection.Range.Tables.Count > 0 Then
-            Set tbl = Selection.Range.Tables(Selection.Range.Tables.Count)
+        ElseIf Selection.Range.Tables.count > 0 Then
+            Set tbl = Selection.Range.Tables(Selection.Range.Tables.count)
         Else
             MsgBox "Couldn't resolve the table from the selection.", vbExclamation
             Exit Sub
@@ -214,9 +214,9 @@ Sub ViewSplitVerticalToggle()
     Dim doc As Document
     Set doc = ActiveDocument
 
-    If doc.Windows.Count > 1 Then
-        Do While doc.Windows.Count > 1
-            doc.Windows(doc.Windows.Count).Close
+    If doc.Windows.count > 1 Then
+        Do While doc.Windows.count > 1
+            doc.Windows(doc.Windows.count).Close
         Loop
         doc.Windows(1).Activate
         doc.Windows(1).WindowState = wdWindowStateMaximize
