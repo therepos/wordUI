@@ -16,8 +16,6 @@ wordUI
     └── bas
     └── cmd
     └── dotm
-
-
 ```
 
 ## Resources
