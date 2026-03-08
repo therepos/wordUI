@@ -1,34 +1,6 @@
 Attribute VB_Name = "Subs"
 Option Explicit
 
-Sub DocFontArial()
-
-    Dim sr As Range
-    Application.ScreenUpdating = False
-    For Each sr In ActiveDocument.StoryRanges
-        Do
-            sr.Font.Name = "Arial"
-            Set sr = sr.NextStoryRange
-        Loop Until sr Is Nothing
-    Next
-    Application.ScreenUpdating = True
-
-End Sub
-
-Sub DocFontEYInterstateLight()
-
-    Dim sr As Range
-    Application.ScreenUpdating = False
-    For Each sr In ActiveDocument.StoryRanges
-        Do
-            sr.Font.Name = "EYInterstate Light"
-            Set sr = sr.NextStoryRange
-        Loop Until sr Is Nothing
-    Next
-    Application.ScreenUpdating = True
-
-End Sub
-
 Sub DocFontSizeDecrease()
 
     Dim para As Paragraph
