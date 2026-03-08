@@ -27,13 +27,566 @@ errh:
 End Sub
 ```
 
+## Module `SubConvertUStoUK`
+
+### `ConvertUStoUK`
+
+```vbnet
+Public Sub ConvertUStoUK()
+    Application.ScreenUpdating = False
+    Application.UndoRecord.StartCustomRecord "US to UK Conversion"
+    
+    ' ----- -ize / -ise (auto-covers -izes, -ized, -izing, -izer, -ization) -----
+    R "recognize", "recognise"
+    R "organize", "organise"
+    R "realize", "realise"
+    R "minimize", "minimise"
+    R "maximize", "maximise"
+    R "optimize", "optimise"
+    R "utilize", "utilise"
+    R "authorize", "authorise"
+    R "categorize", "categorise"
+    R "characterize", "characterise"
+    R "customize", "customise"
+    R "emphasize", "emphasise"
+    R "finalize", "finalise"
+    R "globalize", "globalise"
+    R "harmonize", "harmonise"
+    R "initialize", "initialise"
+    R "legalize", "legalise"
+    R "memorize", "memorise"
+    R "modernize", "modernise"
+    R "neutralize", "neutralise"
+    R "normalize", "normalise"
+    R "prioritize", "prioritise"
+    R "specialize", "specialise"
+    R "standardize", "standardise"
+    R "summarize", "summarise"
+    R "symbolize", "symbolise"
+    R "synchronize", "synchronise"
+    R "apologize", "apologise"
+    R "capitalize", "capitalise"
+    R "centralize", "centralise"
+    R "criticize", "criticise"
+    R "digitize", "digitise"
+    R "dramatize", "dramatise"
+    R "familiarize", "familiarise"
+    R "fertilize", "fertilise"
+    R "generalize", "generalise"
+    R "hospitalize", "hospitalise"
+    R "hypothesize", "hypothesise"
+    R "idealize", "idealise"
+    R "immunize", "immunise"
+    R "itemize", "itemise"
+    R "jeopardize", "jeopardise"
+    R "liberalize", "liberalise"
+    R "localize", "localise"
+    R "marginalize", "marginalise"
+    R "materialize", "materialise"
+    R "mechanize", "mechanise"
+    R "mobilize", "mobilise"
+    R "monopolize", "monopolise"
+    R "nationalize", "nationalise"
+    R "penalize", "penalise"
+    R "polarize", "polarise"
+    R "privatize", "privatise"
+    R "revolutionize", "revolutionise"
+    R "scrutinize", "scrutinise"
+    R "sensitize", "sensitise"
+    R "socialize", "socialise"
+    R "stabilize", "stabilise"
+    R "sterilize", "sterilise"
+    R "subsidize", "subsidise"
+    R "terrorize", "terrorise"
+    R "traumatize", "traumatise"
+    R "trivialize", "trivialise"
+    R "vandalize", "vandalise"
+    R "vaporize", "vaporise"
+    R "visualize", "visualise"
+    
+    ' ----- -or / -our (auto-covers -ors, -ored, -oring, -orous, -orable, -orful, -orless) -----
+    R "color", "colour"
+    R "favor", "favour"
+    R "honor", "honour"
+    R "humor", "humour"
+    R "labor", "labour"
+    R "neighbor", "neighbour"
+    R "behavior", "behaviour"
+    R "flavor", "flavour"
+    R "harbor", "harbour"
+    R "rumor", "rumour"
+    R "tumor", "tumour"
+    R "valor", "valour"
+    R "vigor", "vigour"
+    R "armor", "armour"
+    R "candor", "candour"
+    R "clamor", "clamour"
+    R "endeavor", "endeavour"
+    R "fervor", "fervour"
+    R "odor", "odour"
+    R "parlor", "parlour"
+    R "rancor", "rancour"
+    R "rigor", "rigour"
+    R "savior", "saviour"
+    R "splendor", "splendour"
+    R "demeanor", "demeanour"
+    
+    ' ----- -er / -re (auto-covers -ers, -ered) -----
+    R "center", "centre"
+    R "fiber", "fibre"
+    R "liter", "litre"
+    R "meter", "metre"
+    R "theater", "theatre"
+    R "caliber", "calibre"
+    R "scepter", "sceptre"
+    R "somber", "sombre"
+    R "specter", "spectre"
+    R "luster", "lustre"
+    R "meager", "meagre"
+    R "saber", "sabre"
+    
+    ' ----- -ense / -ence (auto-covers -enses, -enseless, -ensible) -----
+    R "defense", "defence"
+    R "offense", "offence"
+    R "license", "licence"
+    R "pretense", "pretence"
+    
+    ' ----- -og / -ogue (auto-covers -ogs, -oged, -oging) -----
+    R "analog", "analogue"
+    R "catalog", "catalogue"
+    R "dialog", "dialogue"
+    R "monolog", "monologue"
+    R "prolog", "prologue"
+    R "epilog", "epilogue"
+    
+    ' ----- -yze / -yse (auto-covers -yzed, -yzing, -yzes, -yzer) -----
+    R "analyze", "analyse"
+    R "paralyze", "paralyse"
+    R "catalyze", "catalyse"
+    
+    ' ----- doubled consonants (auto-covers -ed, -ing, -er, -ers) -----
+    R "travel", "travell"
+    R "cancel", "cancell"
+    R "model", "modell"
+    R "label", "labell"
+    R "level", "levell"
+    R "fuel", "fuell"
+    R "counsel", "counsell"
+    R "dial", "diall"
+    
+    ' ----- exact matches only (no inflection) -----
+    X "aging", "ageing"
+    X "airplane", "aeroplane"
+    X "airplanes", "aeroplanes"
+    X "aluminum", "aluminium"
+    X "artifact", "artefact"
+    X "artifacts", "artefacts"
+    X "cozy", "cosy"
+    X "donut", "doughnut"
+    X "donuts", "doughnuts"
+    X "gray", "grey"
+    X "inquire", "enquire"
+    X "inquired", "enquired"
+    X "inquiring", "enquiring"
+    X "inquiry", "enquiry"
+    X "inquiries", "enquiries"
+    X "judgment", "judgement"
+    X "judgments", "judgements"
+    X "maneuver", "manoeuvre"
+    X "maneuvers", "manoeuvres"
+    X "maneuvered", "manoeuvred"
+    X "maneuvering", "manoeuvring"
+    X "mold", "mould"
+    X "molds", "moulds"
+    X "molded", "moulded"
+    X "molding", "moulding"
+    X "molt", "moult"
+    X "molts", "moults"
+    X "molted", "moulted"
+    X "molting", "moulting"
+    X "mustache", "moustache"
+    X "mustaches", "moustaches"
+    X "pajamas", "pyjamas"
+    X "plow", "plough"
+    X "plows", "ploughs"
+    X "plowed", "ploughed"
+    X "plowing", "ploughing"
+    X "skeptic", "sceptic"
+    X "skeptics", "sceptics"
+    X "skeptical", "sceptical"
+    X "skepticism", "scepticism"
+    X "tire", "tyre"
+    X "tires", "tyres"
+    X "fetus", "foetus"
+    X "diarrhea", "diarrhoea"
+    X "anemia", "anaemia"
+    X "anemic", "anaemic"
+    X "anesthetic", "anaesthetic"
+    X "anesthetics", "anaesthetics"
+    X "archeology", "archaeology"
+    X "archeological", "archaeological"
+    X "estrogen", "oestrogen"
+    X "pediatric", "paediatric"
+    X "pediatrics", "paediatrics"
+    X "pediatrician", "paediatrician"
+    X "leukemia", "leukaemia"
+    X "math", "maths"
+    X "program", "programme"
+    X "programs", "programmes"
+    X "check", "cheque"
+    X "checks", "cheques"
+    X "checkbook", "chequebook"
+    X "curb", "kerb"
+    X "curbs", "kerbs"
+    X "draft", "draught"
+    X "drafts", "draughts"
+    X "drafty", "draughty"
+    X "enrollment", "enrolment"
+    X "enrollments", "enrolments"
+    X "enroll", "enrol"
+    X "enrolls", "enrols"
+    X "fulfill", "fulfil"
+    X "fulfills", "fulfils"
+    X "fulfillment", "fulfilment"
+    X "instill", "instil"
+    X "instills", "instils"
+    X "installment", "instalment"
+    X "installments", "instalments"
+    X "jewelry", "jewellery"
+    X "skillful", "skilful"
+    X "skillfully", "skilfully"
+    X "willful", "wilful"
+    X "willfully", "wilfully"
+    
+    ' ===== ADD YOUR OWN HERE =====
+    ' R "usword", "ukword"      <- smart: auto-handles inflections
+    ' X "usword", "ukword"      <- exact: only replaces this specific word
+    
+    Application.UndoRecord.EndCustomRecord
+    Application.ScreenUpdating = True
+    MsgBox "Done. Ctrl+Z to undo.", vbInformation, "US to UK English"
+End Sub
+```
+
+### `R`
+
+```vbnet
+Private Sub R(us As String, uk As String)
+    ' Always do the root word itself
+    X us, uk
+    
+    ' -ize / -ise pattern
+    If EndsWith(us, "ize") And EndsWith(uk, "ise") Then
+        Dim izeStem As String: izeStem = Left(us, Len(us) - 3)
+        Dim iseStem As String: iseStem = Left(uk, Len(uk) - 3)
+        X izeStem & "izes", iseStem & "ises"
+        X izeStem & "ized", iseStem & "ised"
+        X izeStem & "izing", iseStem & "ising"
+        X izeStem & "izer", iseStem & "iser"
+        X izeStem & "izers", iseStem & "isers"
+        X izeStem & "ization", iseStem & "isation"
+        X izeStem & "izations", iseStem & "isations"
+        Exit Sub
+    End If
+    
+    ' -yze / -yse pattern
+    If EndsWith(us, "yze") And EndsWith(uk, "yse") Then
+        Dim yzeStem As String: yzeStem = Left(us, Len(us) - 3)
+        Dim yseStem As String: yseStem = Left(uk, Len(uk) - 3)
+        X yzeStem & "yzes", yseStem & "yses"
+        X yzeStem & "yzed", yseStem & "ysed"
+        X yzeStem & "yzing", yseStem & "ysing"
+        X yzeStem & "yzer", yseStem & "yser"
+        X yzeStem & "yzers", yseStem & "ysers"
+        Exit Sub
+    End If
+    
+    ' -or / -our pattern
+    If EndsWith(us, "or") And EndsWith(uk, "our") Then
+        X us & "s", uk & "s"
+        X us & "ed", uk & "ed"
+        X us & "ing", uk & "ing"
+        X us & "ful", uk & "ful"
+        X us & "fully", uk & "fully"
+        X us & "less", uk & "less"
+        X us & "able", uk & "able"
+        X us & "ous", uk & "ous"
+        X us & "ite", uk & "ite"
+        X us & "ites", uk & "ites"
+        X us & "al", uk & "al"
+        Exit Sub
+    End If
+    
+    ' -er / -re pattern
+    If EndsWith(us, "er") And EndsWith(uk, "re") Then
+        X us & "s", uk & "s"
+        X us & "ed", uk & "d"
+        Exit Sub
+    End If
+    
+    ' -ense / -ence pattern
+    If EndsWith(us, "ense") And EndsWith(uk, "ence") Then
+        Dim enseStem As String: enseStem = Left(us, Len(us) - 4)
+        Dim enceStem As String: enceStem = Left(uk, Len(uk) - 4)
+        X enseStem & "enses", enceStem & "ences"
+        X enseStem & "enseless", enceStem & "enceless"
+        X enseStem & "ensible", enceStem & "encible"
+        Exit Sub
+    End If
+    
+    ' -og / -ogue pattern
+    If EndsWith(us, "og") And EndsWith(uk, "ogue") Then
+        X us & "s", uk & "s"
+        X us & "ed", uk & "d"
+        X us & "ing", uk & "ing"
+        Exit Sub
+    End If
+    
+    ' doubled consonant pattern (e.g. travel -> travell)
+    ' The root won't match whole words usefully, but the suffixes will
+    If Len(uk) = Len(us) + 1 And Left(uk, Len(us)) = us Then
+        X us & "ed", uk & "ed"
+        X us & "ing", uk & "ing"
+        X us & "er", uk & "er"
+        X us & "ers", uk & "ers"
+        X us & "or", uk & "or"
+        X us & "ors", uk & "ors"
+        ' Don't replace the bare root (travel is valid in both)
+        Exit Sub
+    End If
+End Sub
+```
+
+### `X`
+
+```vbnet
+Private Sub X(us As String, uk As String)
+    Dim sr As Range
+    For Each sr In ActiveDocument.StoryRanges
+        Do
+            With sr.Find
+                .ClearFormatting
+                .Replacement.ClearFormatting
+                .text = us
+                .Replacement.text = uk
+                .MatchWholeWord = True
+                .MatchCase = False
+                .Forward = True
+                .Wrap = wdFindStop
+                .Execute Replace:=wdReplaceAll
+            End With
+            Set sr = sr.NextStoryRange
+        Loop Until sr Is Nothing
+    Next sr
+End Sub
+```
+
+### `EndsWith`
+
+```vbnet
+Private Function EndsWith(s As String, suffix As String) As Boolean
+    If Len(s) >= Len(suffix) Then
+        EndsWith = (Right(s, Len(suffix)) = suffix)
+    End If
+End Function
+```
+
 ## Module `Subs`
+
+### `ResetStyles`
+
+```vbnet
+Sub ResetStyles()
+    Dim docOrig As Object
+    Dim docTemp As Object
+    Dim sty As Object
+    
+    Application.ScreenUpdating = False
+    Set docOrig = ActiveDocument
+    
+    Set docTemp = Documents.Add(Visible:=False)
+    
+    On Error Resume Next
+    For Each sty In docTemp.Styles
+        If sty.BuiltIn Then
+            docOrig.Styles(sty.NameLocal).Font = sty.Font
+            docOrig.Styles(sty.NameLocal).ParagraphFormat = sty.ParagraphFormat
+        End If
+    Next sty
+    On Error GoTo 0
+    
+    docTemp.Close SaveChanges:=False
+    Application.ScreenUpdating = True
+End Sub
+```
+
+### `ListAlphaRoman`
+
+```vbnet
+Sub ListAlphaRoman()
+    Dim lt As ListTemplate
+    Dim rng As Range
+    Dim startLevel As Long
+    Dim prevPara As Paragraph
+    
+    Set rng = Selection.Range
+    
+    ' Detect current list level
+    startLevel = 0
+    If rng.ListFormat.ListType <> wdListNoNumbering Then
+        ' Cursor is inside an existing list  use that level
+        startLevel = rng.ListFormat.ListLevelNumber
+        ' Remove existing list formatting for clean replacement
+        rng.ListFormat.RemoveNumbers
+    Else
+        ' Cursor is NOT in a list  check the previous paragraph
+        If rng.Paragraphs(1).Range.Start > 0 Then
+            Set prevPara = rng.Paragraphs(1).Previous
+            If Not prevPara Is Nothing Then
+                If prevPara.Range.ListFormat.ListType <> wdListNoNumbering Then
+                    ' Previous para is in a list, so we're continuing one level deeper
+                    startLevel = prevPara.Range.ListFormat.ListLevelNumber + 1
+                End If
+            End If
+        End If
+    End If
+    
+    ' Fallback to level 1 if we couldn't determine context
+    If startLevel < 1 Then startLevel = 1
+    If startLevel > 8 Then startLevel = 8  ' cap so startLevel+1 <= 9
+    
+    Set lt = ActiveDocument.ListTemplates.Add(OutlineNumbered:=True)
+    
+    ' Alpha level: (a), (b), (c)...
+    With lt.ListLevels(startLevel)
+        .NumberStyle = wdListNumberStyleLowercaseLetter
+        .NumberFormat = "(%" & startLevel & ")"
+        .TrailingCharacter = wdTrailingTab
+        .NumberPosition = CentimetersToPoints(0.63 * (startLevel - 1))
+        .TextPosition = CentimetersToPoints(0.63 * startLevel)
+        .TabPosition = wdUndefined
+        .ResetOnHigher = startLevel - 1
+        .StartAt = 1
+    End With
+    
+    ' Roman sublevel: (i), (ii), (iii)...
+    If startLevel + 1 <= 9 Then
+        With lt.ListLevels(startLevel + 1)
+            .NumberStyle = wdListNumberStyleLowercaseRoman
+            .NumberFormat = "(%" & (startLevel + 1) & ")"
+            .TrailingCharacter = wdTrailingTab
+            .NumberPosition = CentimetersToPoints(0.63 * startLevel)
+            .TextPosition = CentimetersToPoints(0.63 * (startLevel + 1))
+            .TabPosition = wdUndefined
+            .ResetOnHigher = startLevel
+            .StartAt = 1
+        End With
+    End If
+    
+    rng.ListFormat.ApplyListTemplateWithLevel _
+        ListTemplate:=lt, _
+        ContinuePreviousList:=False, _
+        ApplyTo:=wdListApplyToSelection, _
+        DefaultListBehavior:=wdWord10ListBehavior
+End Sub
+```
+
+### `ResetFormat`
+
+```vbnet
+Sub ResetFormat()
+    ActiveDocument.Content.Select
+    Selection.ClearFormatting
+End Sub
+```
+
+### `ResetTables`
+
+```vbnet
+Sub ResetTables()
+    Dim tbl As Word.Table
+    Dim s As Word.Style
+    Dim tableNormal As Word.Style
+
+    ' Find the built-in "Table Normal" style without using the enum
+    For Each s In ActiveDocument.Styles
+        If s.BuiltIn Then
+            ' Built-in table styles have Type = wdStyleTypeTable
+            If s.Type = wdStyleTypeTable Then
+                ' "NameLocal" is the localized display name; look for the "Normal" base table style
+                ' This heuristic avoids hardcoding the English name
+                If LCase$(s.NameLocal) Like "*normal*" Or LCase$(s.NameLocal) Like "*table normal*" Then
+                    Set tableNormal = s
+                    Exit For
+                End If
+            End If
+        End If
+    Next s
+
+    For Each tbl In ActiveDocument.Tables
+        On Error Resume Next
+        If Not tableNormal Is Nothing Then
+            tbl.Style = tableNormal
+        Else
+            ' Fallbacks:
+            ' 1) English name (works if UI is English)
+            tbl.Style = "Table Normal"
+            If Err.Number <> 0 Then
+                Err.Clear
+                ' 2) A very common built-in table style (English UI)
+                tbl.Style = "Table Grid"
+            End If
+        End If
+        On Error GoTo 0
+
+        With tbl
+            .TopPadding = 0
+            .BottomPadding = 0
+            .LeftPadding = 0
+            .RightPadding = 0
+            .Borders.Enable = True
+        End With
+    Next tbl
+End Sub
+```
+
+### `ResetList`
+
+```vbnet
+Sub ResetList()
+
+    Dim para As Paragraph
+    Dim lt As WdListType
+    Dim lvl As Long
+
+    For Each para In ActiveDocument.Paragraphs
+        lt = para.Range.ListFormat.ListType
+        If lt <> wdListNoNumbering Then
+            ' Remember the current nesting level
+            lvl = para.Range.ListFormat.ListLevelNumber
+
+            ' Remove then reapply to reset formatting
+            para.Range.ListFormat.RemoveNumbers
+
+            If lt = wdListBullet Then
+                para.Range.ListFormat.ApplyBulletDefault
+            Else
+                para.Range.ListFormat.ApplyNumberDefault
+            End If
+
+            ' Restore the original nesting level
+            para.Range.ListFormat.ListLevelNumber = lvl
+        End If
+    Next para
+
+End Sub
+```
 
 ### `FormatDocTable`
 
 ```vbnet
 Sub FormatDocTable()
-    Dim Tbl As Table
+    Dim tbl As Table
     Dim topMargin As Single, bottomMargin As Single
     Dim leftMargin As Single, rightMargin As Single
     
@@ -43,14 +596,14 @@ Sub FormatDocTable()
     leftMargin = CentimetersToPoints(0.19)
     rightMargin = CentimetersToPoints(0.19)
     
-    For Each Tbl In ActiveDocument.Tables
-        With Tbl
+    For Each tbl In ActiveDocument.Tables
+        With tbl
             .TopPadding = topMargin
             .BottomPadding = bottomMargin
             .LeftPadding = leftMargin
             .RightPadding = rightMargin
         End With
-    Next Tbl
+    Next tbl
 End Sub
 ```
 
@@ -99,7 +652,7 @@ End Sub
 
 ```vbnet
 Sub FormatSelectedTableBorders()
-    Dim Tbl As Table
+    Dim tbl As Table
     Dim bTypes As Variant
     Dim i As Long
 
@@ -108,7 +661,7 @@ Sub FormatSelectedTableBorders()
         Exit Sub
     End If
 
-    Set Tbl = Selection.Tables(1)
+    Set tbl = Selection.Tables(1)
 
     ' Only these borders (no diagonals)
     bTypes = Array( _
@@ -119,7 +672,7 @@ Sub FormatSelectedTableBorders()
         wdBorderHorizontal, _
         wdBorderVertical)
 
-    With Tbl
+    With tbl
         For i = LBound(bTypes) To UBound(bTypes)
             With .Borders(bTypes(i))
                 .LineStyle = wdLineStyleSingle
@@ -210,19 +763,19 @@ Sub Document_ContentControlOnExit(ByVal ContentControl As ContentControl, Cancel
         Set oCC = ActiveDocument.SelectContentControlsByTitle("RegNo").Item(1) 'Richtext CC in Header
         Select Case True
           Case ContentControl.ShowingPlaceholderText:
-            oCC.Range.Text = vbNullString
-          Case ContentControl.Range.Text = "AC ALLIANCES (PAC)"
-            oCC.Range.Text = "201118268H"
+            oCC.Range.text = vbNullString
+          Case ContentControl.Range.text = "AC ALLIANCES (PAC)"
+            oCC.Range.text = "201118268H"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdRed
-          Case ContentControl.Range.Text = "Y M WOO & CO"
-            oCC.Range.Text = "S88PF0309G"
+          Case ContentControl.Range.text = "Y M WOO & CO"
+            oCC.Range.text = "S88PF0309G"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdBlue
-          Case ContentControl.Range.Text = "GAAP PAC"
-            oCC.Range.Text = "201831129C"
+          Case ContentControl.Range.text = "GAAP PAC"
+            oCC.Range.text = "201831129C"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdGreen
@@ -231,30 +784,6 @@ Sub Document_ContentControlOnExit(ByVal ContentControl As ContentControl, Cancel
 lbl_Exit:
     Exit Sub
     
-End Sub
-```
-
-### `ClearTableStyles`
-
-```vbnet
-Sub ClearTableStyles()
-'   Purpose: Clear table styles
-
-    Dim objTable As Table
-    Dim objDoc As Document
-    
-    Application.ScreenUpdating = False
-    Set objDoc = ActiveDocument
-    
-    For Each objTable In objDoc.Tables
-      objTable.Style = "Table Normal"
-      objTable.Borders.Enable = True
-    Next objTable
-    
-    Application.ScreenUpdating = True
-    
-    Set objDoc = Nothing
-  
 End Sub
 ```
 
@@ -318,19 +847,19 @@ Sub Document_ContentControlOnExit(, ByVal ContentControl As ContentControl, Canc
         Set oCC = ActiveDocument.SelectContentControlsByTitle("RegNo").Item(1) 'Richtext CC in Header
         Select Case True
           Case ContentControl.ShowingPlaceholderText:
-            oCC.Range.Text = vbNullString
-          Case ContentControl.Range.Text = "AC ALLIANCES (PAC)"
-            oCC.Range.Text = "201118268H"
+            oCC.Range.text = vbNullString
+          Case ContentControl.Range.text = "AC ALLIANCES (PAC)"
+            oCC.Range.text = "201118268H"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdRed
-          Case ContentControl.Range.Text = "Y M WOO & CO"
-            oCC.Range.Text = "S88PF0309G"
+          Case ContentControl.Range.text = "Y M WOO & CO"
+            oCC.Range.text = "S88PF0309G"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdBlue
-          Case ContentControl.Range.Text = "GAAP PAC"
-            oCC.Range.Text = "201831129C"
+          Case ContentControl.Range.text = "GAAP PAC"
+            oCC.Range.text = "201831129C"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdGreen
@@ -385,12 +914,12 @@ Sub InsertReference()
     If strPaste = False Then Exit Sub
     If strPaste = "" Then Exit Sub
 
-    Selection.TypeText Text:="["
+    Selection.TypeText text:="["
     ActiveDocument.Hyperlinks.Add _
         Anchor:=Selection.Range, _
         Address:=strPaste, _
         TextToDisplay:=ChrW(664)
-    Selection.TypeText Text:="]"
+    Selection.TypeText text:="]"
     Selection.MoveLeft Unit:=wdCharacter, Count:=1
     Selection.MoveLeft Unit:=wdCharacter, Count:=1, Extend:=wdExtend
     Selection.Font.Color = wdColorBlue
@@ -633,13 +1162,13 @@ Sub SetTablesBordersColor(, varColor As Long)
 
     Application.ScreenUpdating = False
     
-    Dim Tbl As Table
-    For Each Tbl In ActiveDocument.Tables
-        Tbl.Borders.InsideColor = varColor
-        Tbl.Borders.InsideLineStyle = wdLineStyleSingle
+    Dim tbl As Table
+    For Each tbl In ActiveDocument.Tables
+        tbl.Borders.InsideColor = varColor
+        tbl.Borders.InsideLineStyle = wdLineStyleSingle
 '        Tbl.Borders.InsideLineWidth = wdLineWidth050pt
-        Tbl.Borders.OutsideColor = varColor
-        Tbl.Borders.OutsideLineStyle = wdLineStyleSingle
+        tbl.Borders.OutsideColor = varColor
+        tbl.Borders.OutsideLineStyle = wdLineStyleSingle
 '        Tbl.Borders.OutsideLineWidth = wdLineWidth050pt
     Next
         
@@ -659,14 +1188,14 @@ Sub SetTablesMargin(, varPadding As Double)
 
     Application.ScreenUpdating = False
     
-    Dim Tbl As Table
-    For Each Tbl In ActiveDocument.Tables
-        Tbl.AutoFitBehavior (wdAutoFitWindow)
-        Tbl.AllowAutoFit = True
-        Tbl.LeftPadding = CentimetersToPoints(varPadding)
-        Tbl.RightPadding = CentimetersToPoints(varPadding)
-        Tbl.TopPadding = CentimetersToPoints(varPadding)
-        Tbl.BottomPadding = CentimetersToPoints(varPadding)
+    Dim tbl As Table
+    For Each tbl In ActiveDocument.Tables
+        tbl.AutoFitBehavior (wdAutoFitWindow)
+        tbl.AllowAutoFit = True
+        tbl.LeftPadding = CentimetersToPoints(varPadding)
+        tbl.RightPadding = CentimetersToPoints(varPadding)
+        tbl.TopPadding = CentimetersToPoints(varPadding)
+        tbl.BottomPadding = CentimetersToPoints(varPadding)
     Next
     
     Application.ScreenUpdating = True
