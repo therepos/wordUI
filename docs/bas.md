@@ -288,6 +288,95 @@ Private Function EndsWith(s As String, suffix As String) As Boolean
 End Function
 ```
 
+## Module `SubPreset`
+
+### `RunPresetFontArial`
+
+```vbnet
+Public Sub RunPresetFontArial()
+    ApplyPreset "Arial"
+End Sub
+```
+
+### `RunPresetFontEY`
+
+```vbnet
+Public Sub RunPresetFontEY()
+    ApplyPreset "EYInterstate Light"
+End Sub
+```
+
+### `RunPresetFontTimes`
+
+```vbnet
+Public Sub RunPresetFontTimes()
+    ApplyPreset "Times New Roman"
+End Sub
+```
+
+### `RunPresetFontCalibri`
+
+```vbnet
+Public Sub RunPresetFontCalibri()
+    ApplyPreset "Calibri"
+End Sub
+```
+
+### `ApplyPreset`
+
+```vbnet
+Private Sub ApplyPreset(f As String)
+
+    Application.ScreenUpdating = False
+    SetPresetFont f
+    ApplyFontPreset
+    Application.ScreenUpdating = True
+    MsgBox "Font applied: " & f, vbInformation, "Font"
+
+End Sub
+```
+
+### `ApplyFontPreset`
+
+```vbnet
+Private Sub ApplyFontPreset()
+
+    Dim f As String
+    Dim sr As Range
+
+    On Error Resume Next
+    f = ActiveDocument.CustomDocumentProperties("PresetFont").Value
+    If f = "" Then f = "Arial"
+    On Error GoTo 0
+    For Each sr In ActiveDocument.StoryRanges
+        Do
+            sr.Font.Name = f
+            Set sr = sr.NextStoryRange
+        Loop Until sr Is Nothing
+    Next sr
+
+End Sub
+```
+
+### `SetPresetFont`
+
+```vbnet
+Private Sub SetPresetFont(f As String)
+
+    On Error Resume Next
+    If ActiveDocument.CustomDocumentProperties("PresetFont").Name = "" Then
+        ActiveDocument.CustomDocumentProperties.Add _
+            Name:="PresetFont", _
+            LinkToContent:=False, _
+            Type:=msoPropertyTypeString, _
+            Value:=f
+    Else
+        ActiveDocument.CustomDocumentProperties("PresetFont").Value = f
+    End If
+
+End Sub
+```
+
 ## Module `SubReset`
 
 ### `ResetAll`
@@ -535,42 +624,6 @@ End Sub
 ```
 
 ## Module `Subs`
-
-### `DocFontArial`
-
-```vbnet
-Sub DocFontArial()
-
-    Dim sr As Range
-    Application.ScreenUpdating = False
-    For Each sr In ActiveDocument.StoryRanges
-        Do
-            sr.Font.Name = "Arial"
-            Set sr = sr.NextStoryRange
-        Loop Until sr Is Nothing
-    Next
-    Application.ScreenUpdating = True
-
-End Sub
-```
-
-### `DocFontEYInterstateLight`
-
-```vbnet
-Sub DocFontEYInterstateLight()
-
-    Dim sr As Range
-    Application.ScreenUpdating = False
-    For Each sr In ActiveDocument.StoryRanges
-        Do
-            sr.Font.Name = "EYInterstate Light"
-            Set sr = sr.NextStoryRange
-        Loop Until sr Is Nothing
-    Next
-    Application.ScreenUpdating = True
-
-End Sub
-```
 
 ### `DocFontSizeDecrease`
 
