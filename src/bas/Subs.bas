@@ -1,6 +1,177 @@
 Attribute VB_Name = "Subs"
+Option Explicit
+
+Sub ResetStyles()
+    Dim docOrig As Object
+    Dim docTemp As Object
+    Dim sty As Object
+    
+    Application.ScreenUpdating = False
+    Set docOrig = ActiveDocument
+    
+    Set docTemp = Documents.Add(Visible:=False)
+    
+    On Error Resume Next
+    For Each sty In docTemp.Styles
+        If sty.BuiltIn Then
+            docOrig.Styles(sty.NameLocal).Font = sty.Font
+            docOrig.Styles(sty.NameLocal).ParagraphFormat = sty.ParagraphFormat
+        End If
+    Next sty
+    On Error GoTo 0
+    
+    docTemp.Close SaveChanges:=False
+    Application.ScreenUpdating = True
+End Sub
+
+Sub ListAlphaRoman()
+    Dim lt As ListTemplate
+    Dim rng As Range
+    Dim startLevel As Long
+    Dim prevPara As Paragraph
+    
+    Set rng = Selection.Range
+    
+    ' Detect current list level
+    startLevel = 0
+    If rng.ListFormat.ListType <> wdListNoNumbering Then
+        ' Cursor is inside an existing list — use that level
+        startLevel = rng.ListFormat.ListLevelNumber
+        ' Remove existing list formatting for clean replacement
+        rng.ListFormat.RemoveNumbers
+    Else
+        ' Cursor is NOT in a list — check the previous paragraph
+        If rng.Paragraphs(1).Range.Start > 0 Then
+            Set prevPara = rng.Paragraphs(1).Previous
+            If Not prevPara Is Nothing Then
+                If prevPara.Range.ListFormat.ListType <> wdListNoNumbering Then
+                    ' Previous para is in a list, so we're continuing one level deeper
+                    startLevel = prevPara.Range.ListFormat.ListLevelNumber + 1
+                End If
+            End If
+        End If
+    End If
+    
+    ' Fallback to level 1 if we couldn't determine context
+    If startLevel < 1 Then startLevel = 1
+    If startLevel > 8 Then startLevel = 8  ' cap so startLevel+1 <= 9
+    
+    Set lt = ActiveDocument.ListTemplates.Add(OutlineNumbered:=True)
+    
+    ' Alpha level: (a), (b), (c)...
+    With lt.ListLevels(startLevel)
+        .NumberStyle = wdListNumberStyleLowercaseLetter
+        .NumberFormat = "(%" & startLevel & ")"
+        .TrailingCharacter = wdTrailingTab
+        .NumberPosition = CentimetersToPoints(0.63 * (startLevel - 1))
+        .TextPosition = CentimetersToPoints(0.63 * startLevel)
+        .TabPosition = wdUndefined
+        .ResetOnHigher = startLevel - 1
+        .StartAt = 1
+    End With
+    
+    ' Roman sublevel: (i), (ii), (iii)...
+    If startLevel + 1 <= 9 Then
+        With lt.ListLevels(startLevel + 1)
+            .NumberStyle = wdListNumberStyleLowercaseRoman
+            .NumberFormat = "(%" & (startLevel + 1) & ")"
+            .TrailingCharacter = wdTrailingTab
+            .NumberPosition = CentimetersToPoints(0.63 * startLevel)
+            .TextPosition = CentimetersToPoints(0.63 * (startLevel + 1))
+            .TabPosition = wdUndefined
+            .ResetOnHigher = startLevel
+            .StartAt = 1
+        End With
+    End If
+    
+    rng.ListFormat.ApplyListTemplateWithLevel _
+        ListTemplate:=lt, _
+        ContinuePreviousList:=False, _
+        ApplyTo:=wdListApplyToSelection, _
+        DefaultListBehavior:=wdWord10ListBehavior
+End Sub
+
+Sub ResetFormat()
+    ActiveDocument.Content.Select
+    Selection.ClearFormatting
+End Sub
+
+Sub ResetTables()
+    Dim tbl As Word.Table
+    Dim s As Word.Style
+    Dim tableNormal As Word.Style
+
+    ' Find the built-in "Table Normal" style without using the enum
+    For Each s In ActiveDocument.Styles
+        If s.BuiltIn Then
+            ' Built-in table styles have Type = wdStyleTypeTable
+            If s.Type = wdStyleTypeTable Then
+                ' "NameLocal" is the localized display name; look for the "Normal" base table style
+                ' This heuristic avoids hardcoding the English name
+                If LCase$(s.NameLocal) Like "*normal*" Or LCase$(s.NameLocal) Like "*table normal*" Then
+                    Set tableNormal = s
+                    Exit For
+                End If
+            End If
+        End If
+    Next s
+
+    For Each tbl In ActiveDocument.Tables
+        On Error Resume Next
+        If Not tableNormal Is Nothing Then
+            tbl.Style = tableNormal
+        Else
+            ' Fallbacks:
+            ' 1) English name (works if UI is English)
+            tbl.Style = "Table Normal"
+            If Err.Number <> 0 Then
+                Err.Clear
+                ' 2) A very common built-in table style (English UI)
+                tbl.Style = "Table Grid"
+            End If
+        End If
+        On Error GoTo 0
+
+        With tbl
+            .TopPadding = 0
+            .BottomPadding = 0
+            .LeftPadding = 0
+            .RightPadding = 0
+            .Borders.Enable = True
+        End With
+    Next tbl
+End Sub
+
+Sub ResetList()
+
+    Dim para As Paragraph
+    Dim lt As WdListType
+    Dim lvl As Long
+
+    For Each para In ActiveDocument.Paragraphs
+        lt = para.Range.ListFormat.ListType
+        If lt <> wdListNoNumbering Then
+            ' Remember the current nesting level
+            lvl = para.Range.ListFormat.ListLevelNumber
+
+            ' Remove then reapply to reset formatting
+            para.Range.ListFormat.RemoveNumbers
+
+            If lt = wdListBullet Then
+                para.Range.ListFormat.ApplyBulletDefault
+            Else
+                para.Range.ListFormat.ApplyNumberDefault
+            End If
+
+            ' Restore the original nesting level
+            para.Range.ListFormat.ListLevelNumber = lvl
+        End If
+    Next para
+
+End Sub
+
 Sub FormatDocTable()
-    Dim Tbl As Table
+    Dim tbl As Table
     Dim topMargin As Single, bottomMargin As Single
     Dim leftMargin As Single, rightMargin As Single
     
@@ -10,14 +181,14 @@ Sub FormatDocTable()
     leftMargin = CentimetersToPoints(0.19)
     rightMargin = CentimetersToPoints(0.19)
     
-    For Each Tbl In ActiveDocument.Tables
-        With Tbl
+    For Each tbl In ActiveDocument.Tables
+        With tbl
             .TopPadding = topMargin
             .BottomPadding = bottomMargin
             .LeftPadding = leftMargin
             .RightPadding = rightMargin
         End With
-    Next Tbl
+    Next tbl
 End Sub
 
 Sub FormatSelectedTableMargins()
@@ -58,7 +229,7 @@ Sub FormatSelectedTableMargins()
 End Sub
 
 Sub FormatSelectedTableBorders()
-    Dim Tbl As Table
+    Dim tbl As Table
     Dim bTypes As Variant
     Dim i As Long
 
@@ -67,7 +238,7 @@ Sub FormatSelectedTableBorders()
         Exit Sub
     End If
 
-    Set Tbl = Selection.Tables(1)
+    Set tbl = Selection.Tables(1)
 
     ' Only these borders (no diagonals)
     bTypes = Array( _
@@ -78,7 +249,7 @@ Sub FormatSelectedTableBorders()
         wdBorderHorizontal, _
         wdBorderVertical)
 
-    With Tbl
+    With tbl
         For i = LBound(bTypes) To UBound(bTypes)
             With .Borders(bTypes(i))
                 .LineStyle = wdLineStyleSingle
@@ -150,19 +321,19 @@ Sub Document_ContentControlOnExit(ByVal ContentControl As ContentControl, Cancel
         Set oCC = ActiveDocument.SelectContentControlsByTitle("RegNo").Item(1) 'Richtext CC in Header
         Select Case True
           Case ContentControl.ShowingPlaceholderText:
-            oCC.Range.Text = vbNullString
-          Case ContentControl.Range.Text = "AC ALLIANCES (PAC)"
-            oCC.Range.Text = "201118268H"
+            oCC.Range.text = vbNullString
+          Case ContentControl.Range.text = "AC ALLIANCES (PAC)"
+            oCC.Range.text = "201118268H"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdRed
-          Case ContentControl.Range.Text = "Y M WOO & CO"
-            oCC.Range.Text = "S88PF0309G"
+          Case ContentControl.Range.text = "Y M WOO & CO"
+            oCC.Range.text = "S88PF0309G"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdBlue
-          Case ContentControl.Range.Text = "GAAP PAC"
-            oCC.Range.Text = "201831129C"
+          Case ContentControl.Range.text = "GAAP PAC"
+            oCC.Range.text = "201831129C"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdGreen
@@ -172,27 +343,6 @@ lbl_Exit:
     Exit Sub
     
 End Sub
-
-Sub ClearTableStyles()
-'   Purpose: Clear table styles
-
-    Dim objTable As Table
-    Dim objDoc As Document
-    
-    Application.ScreenUpdating = False
-    Set objDoc = ActiveDocument
-    
-    For Each objTable In objDoc.Tables
-      objTable.Style = "Table Normal"
-      objTable.Borders.Enable = True
-    Next objTable
-    
-    Application.ScreenUpdating = True
-    
-    Set objDoc = Nothing
-  
-End Sub
-
 Sub CopyHyperlink()
 '   Purpose: Copy hyperlinks
 '   Reference: https://www.msofficeforums.com/word-vba/38223-how-extract-selected-hyperlink-address-clipboard.html
@@ -246,19 +396,19 @@ Sub Document_ContentControlOnExit(, ByVal ContentControl As ContentControl, Canc
         Set oCC = ActiveDocument.SelectContentControlsByTitle("RegNo").Item(1) 'Richtext CC in Header
         Select Case True
           Case ContentControl.ShowingPlaceholderText:
-            oCC.Range.Text = vbNullString
-          Case ContentControl.Range.Text = "AC ALLIANCES (PAC)"
-            oCC.Range.Text = "201118268H"
+            oCC.Range.text = vbNullString
+          Case ContentControl.Range.text = "AC ALLIANCES (PAC)"
+            oCC.Range.text = "201118268H"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdRed
-          Case ContentControl.Range.Text = "Y M WOO & CO"
-            oCC.Range.Text = "S88PF0309G"
+          Case ContentControl.Range.text = "Y M WOO & CO"
+            oCC.Range.text = "S88PF0309G"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdBlue
-          Case ContentControl.Range.Text = "GAAP PAC"
-            oCC.Range.Text = "201831129C"
+          Case ContentControl.Range.text = "GAAP PAC"
+            oCC.Range.text = "201831129C"
             Set oRng = oCC.Range
     '          oRng.Start = oRng.Start + 9
     '          oRng.Font.ColorIndex = wdGreen
@@ -305,12 +455,12 @@ Sub InsertReference()
     If strPaste = False Then Exit Sub
     If strPaste = "" Then Exit Sub
 
-    Selection.TypeText Text:="["
+    Selection.TypeText text:="["
     ActiveDocument.Hyperlinks.Add _
         Anchor:=Selection.Range, _
         Address:=strPaste, _
         TextToDisplay:=ChrW(664)
-    Selection.TypeText Text:="]"
+    Selection.TypeText text:="]"
     Selection.MoveLeft Unit:=wdCharacter, Count:=1
     Selection.MoveLeft Unit:=wdCharacter, Count:=1, Extend:=wdExtend
     Selection.Font.Color = wdColorBlue
@@ -509,13 +659,13 @@ Sub SetTablesBordersColor(, varColor As Long)
 
     Application.ScreenUpdating = False
     
-    Dim Tbl As Table
-    For Each Tbl In ActiveDocument.Tables
-        Tbl.Borders.InsideColor = varColor
-        Tbl.Borders.InsideLineStyle = wdLineStyleSingle
+    Dim tbl As Table
+    For Each tbl In ActiveDocument.Tables
+        tbl.Borders.InsideColor = varColor
+        tbl.Borders.InsideLineStyle = wdLineStyleSingle
 '        Tbl.Borders.InsideLineWidth = wdLineWidth050pt
-        Tbl.Borders.OutsideColor = varColor
-        Tbl.Borders.OutsideLineStyle = wdLineStyleSingle
+        tbl.Borders.OutsideColor = varColor
+        tbl.Borders.OutsideLineStyle = wdLineStyleSingle
 '        Tbl.Borders.OutsideLineWidth = wdLineWidth050pt
     Next
         
@@ -531,14 +681,14 @@ Sub SetTablesMargin(, varPadding As Double)
 
     Application.ScreenUpdating = False
     
-    Dim Tbl As Table
-    For Each Tbl In ActiveDocument.Tables
-        Tbl.AutoFitBehavior (wdAutoFitWindow)
-        Tbl.AllowAutoFit = True
-        Tbl.LeftPadding = CentimetersToPoints(varPadding)
-        Tbl.RightPadding = CentimetersToPoints(varPadding)
-        Tbl.TopPadding = CentimetersToPoints(varPadding)
-        Tbl.BottomPadding = CentimetersToPoints(varPadding)
+    Dim tbl As Table
+    For Each tbl In ActiveDocument.Tables
+        tbl.AutoFitBehavior (wdAutoFitWindow)
+        tbl.AllowAutoFit = True
+        tbl.LeftPadding = CentimetersToPoints(varPadding)
+        tbl.RightPadding = CentimetersToPoints(varPadding)
+        tbl.TopPadding = CentimetersToPoints(varPadding)
+        tbl.BottomPadding = CentimetersToPoints(varPadding)
     Next
     
     Application.ScreenUpdating = True
