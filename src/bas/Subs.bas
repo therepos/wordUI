@@ -1,4 +1,3 @@
-Attribute VB_Name = "Subs"
 Option Explicit
 
 ' =============================================================================
@@ -11,7 +10,9 @@ Option Explicit
 '   - DocSpacingSingle
 '   - SelListAlphaRoman
 '   - SelFormatNumDecimal / SelFormatNumNoDecimal / SelFormatNumDollar
+'   - SelFormatNumRepeat  (splitButton — repeats last-used number format)
 '   - SelFormatDateShort / SelFormatDateLong
+'   - SelFormatDateRepeat (splitButton — repeats last-used date format)
 '   - ViewSplitVerticalToggle
 ' =============================================================================
 
@@ -150,16 +151,28 @@ End Sub
 
 ' ===== NUMBER FORMATTING — WORKS ON ANY SELECTED TEXT ========================
 
-Public Sub SelFormatNumDecimal()
-    FormatSelectedNumbers "#,##0.00", ""
-End Sub
-
 Public Sub SelFormatNumNoDecimal()
+    SavePref "LastNumFmt", "#,##0"
+    SavePref "LastNumPrefix", ""
     FormatSelectedNumbers "#,##0", ""
 End Sub
 
+Public Sub SelFormatNumDecimal()
+    SavePref "LastNumFmt", "#,##0.00"
+    SavePref "LastNumPrefix", ""
+    FormatSelectedNumbers "#,##0.00", ""
+End Sub
+
 Public Sub SelFormatNumDollar()
+    SavePref "LastNumFmt", "#,##0.00"
+    SavePref "LastNumPrefix", "$"
     FormatSelectedNumbers "#,##0.00", "$"
+End Sub
+
+Public Sub SelFormatNumRepeat()
+    FormatSelectedNumbers _
+        GetPref("LastNumFmt", "#,##0.00"), _
+        GetPref("LastNumPrefix", "")
 End Sub
 
 Private Sub FormatSelectedNumbers(fmt As String, prefix As String)
@@ -249,11 +262,17 @@ End Sub
 ' ===== DATE FORMATTING — WORKS ON ANY SELECTED TEXT ==========================
 
 Public Sub SelFormatDateShort()
+    SavePref "LastDateFmt", "DD-MMM-YY"
     FormatSelectedDates "DD-MMM-YY"
 End Sub
 
 Public Sub SelFormatDateLong()
+    SavePref "LastDateFmt", "DD-MMMM-YYYY"
     FormatSelectedDates "DD-MMMM-YYYY"
+End Sub
+
+Public Sub SelFormatDateRepeat()
+    FormatSelectedDates GetPref("LastDateFmt", "DD-MMM-YY")
 End Sub
 
 Private Sub FormatSelectedDates(fmt As String)
@@ -374,4 +393,17 @@ Private Function CleanNumericText(s As String) As String
         t = Replace(t, ")", "")
     End If
     CleanNumericText = Trim$(t)
+End Function
+
+
+' ===== PREFERENCE STORAGE ====================================================
+' Uses Windows registry (SaveSetting/GetSetting) so preferences persist
+' across all documents for the user.
+
+Private Sub SavePref(key As String, val As String)
+    SaveSetting "WordUI", "Preferences", key, val
+End Sub
+
+Private Function GetPref(key As String, defaultVal As String) As String
+    GetPref = GetSetting("WordUI", "Preferences", key, defaultVal)
 End Function
