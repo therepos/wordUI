@@ -3409,13 +3409,12 @@ Private Sub InsertTableFormula(funcName As String)
     Dim fld As Field
     Dim tbl As Table
     Dim col As Long
-    Dim row As Long
     Dim targetRow As Long
     Dim cellText As String
     Dim val As Double
     Dim total As Double
-    Dim count As Long
-    Dim formulaText As String
+    Dim cnt As Long
+    Dim fldResult As String
 
     If Not Selection.Information(wdWithInTable) Then
         MsgBox "Please place your cursor in a table cell.", vbExclamation
@@ -3439,7 +3438,7 @@ Private Sub InsertTableFormula(funcName As String)
 
     ' Manually calculate by reading cells above
     total = 0
-    count = 0
+    cnt = 0
 
     Dim r As Long
     For r = 1 To targetRow - 1
@@ -3452,26 +3451,12 @@ Private Sub InsertTableFormula(funcName As String)
         cellText = Trim(rng.text)
 
         ' Strip formatting: commas, dollar signs, brackets to minus
-        cellText = Replace(cellText, ",", "")
-        cellText = Replace(cellText, "$", "")
-        cellText = Replace(cellText, vbTab, "")
-        If InStr(cellText, "(") > 0 And InStr(cellText, ")") > 0 Then
-            cellText = Replace(cellText, "(", "-")
-            cellText = Replace(cellText, ")", "")
-        End If
-        cellText = Trim(cellText)
+        cellText = CleanNumericText(cellText)
 
         ' Also read formula field results
         If tbl.Cell(r, col).Range.Fields.count > 0 Then
-            Dim fldResult As String
             fldResult = tbl.Cell(r, col).Range.Fields(1).result.text
-            fldResult = Replace(fldResult, ",", "")
-            fldResult = Replace(fldResult, "$", "")
-            If InStr(fldResult, "(") > 0 And InStr(fldResult, ")") > 0 Then
-                fldResult = Replace(fldResult, "(", "-")
-                fldResult = Replace(fldResult, ")", "")
-            End If
-            fldResult = Trim(fldResult)
+            fldResult = CleanNumericText(fldResult)
             If IsNumeric(fldResult) Then
                 cellText = fldResult
             End If
@@ -3480,7 +3465,7 @@ Private Sub InsertTableFormula(funcName As String)
         If IsNumeric(cellText) And Len(cellText) > 0 Then
             val = CDbl(cellText)
             total = total + val
-            count = count + 1
+            cnt = cnt + 1
         End If
 
 NextRow:
@@ -3493,13 +3478,13 @@ NextRow:
         Case "SUM"
             finalVal = total
         Case "AVERAGE"
-            If count > 0 Then
-                finalVal = total / count
+            If cnt > 0 Then
+                finalVal = total / cnt
             Else
                 finalVal = 0
             End If
         Case "COUNT"
-            finalVal = count
+            finalVal = cnt
     End Select
 
     ' Clear cell and write result
@@ -3552,115 +3537,91 @@ End Sub
 ```vbnet
 Private Sub FormatSelectedNumbers(fmt As String, prefix As String)
 
-    Dim sel As Selection
-    Set sel = ActiveWindow.Selection
+    Dim rng As Range
+    Dim fld As Field
+    Dim code As String
+    Dim fieldFormat As String
 
-    ' --- Text is highlighted (works in text box, table cell, title, etc.) ---
-    If sel.Type = ppSelectionText Then
-        FormatNumInTextRange sel.TextRange, fmt, prefix
-        Exit Sub
-    End If
+    Set rng = Selection.Range
 
-    ' --- Whole shape(s) selected — format all text inside ---
-    If sel.Type = ppSelectionShapes Then
-        Dim i As Long
-        For i = 1 To sel.ShapeRange.Count
-            FormatNumInShape sel.ShapeRange(i), fmt, prefix
-        Next i
-        Exit Sub
-    End If
-
-    MsgBox "Please select text or a shape containing numbers.", vbExclamation, "Number Format"
-
-End Sub
-```
-
-### `FormatNumInShape`
-
-```vbnet
-Private Sub FormatNumInShape(shp As Shape, fmt As String, prefix As String)
-
-    On Error Resume Next
-
-    If shp.Type = msoGroup Then
-        Dim subShp As Shape
-        For Each subShp In shp.GroupItems
-            FormatNumInShape subShp, fmt, prefix
-        Next subShp
-        Exit Sub
-    End If
-
-    If shp.HasTable Then
-        Dim r As Long, c As Long
-        For r = 1 To shp.Table.Rows.Count
-            For c = 1 To shp.Table.Columns.Count
-                FormatNumInTextRange shp.Table.Cell(r, c).Shape.TextFrame.TextRange, fmt, prefix
-            Next c
-        Next r
-        Exit Sub
-    End If
-
-    If shp.HasTextFrame Then
-        If shp.TextFrame.HasText Then
-            FormatNumInTextRange shp.TextFrame.TextRange, fmt, prefix
-        End If
-    End If
-
-    On Error GoTo 0
-
-End Sub
-```
-
-### `FormatNumInTextRange`
-
-```vbnet
-Private Sub FormatNumInTextRange(tr As TextRange, fmt As String, prefix As String)
-
-    On Error Resume Next
-
-    ' Try the whole range as a single number first
-    Dim txt As String
-    txt = CleanNumericText(tr.Text)
-
-    If IsNumeric(txt) And Len(txt) > 0 Then
-        Dim val As Double
-        val = CDbl(txt)
-        tr.Text = FormatValue(val, fmt, prefix)
-        tr.ParagraphFormat.Alignment = ppAlignRight
-        Exit Sub
-    End If
-
-    ' Otherwise try each paragraph individually
-    Dim p As Long
-    For p = tr.Paragraphs.Count To 1 Step -1
-        Dim pTxt As String
-        pTxt = CleanNumericText(tr.Paragraphs(p).Text)
-        If IsNumeric(pTxt) And Len(pTxt) > 0 Then
-            tr.Paragraphs(p).Text = FormatValue(CDbl(pTxt), fmt, prefix)
-            tr.Paragraphs(p).ParagraphFormat.Alignment = ppAlignRight
-        End If
-    Next p
-
-    On Error GoTo 0
-
-End Sub
-```
-
-### `FormatValue`
-
-```vbnet
-Private Function FormatValue(val As Double, fmt As String, prefix As String) As String
-    Dim result As String
-    If val < 0 Then
-        result = "(" & Format(Abs(val), fmt) & ")"
-    Else
-        result = Format(val, fmt)
-    End If
+    ' Build Word field format string with bracket negatives
     If Len(prefix) > 0 Then
-        result = prefix & " " & result
+        fieldFormat = " \# ""'" & prefix & " '" & fmt & ";'" & prefix & " '(" & fmt & ")"""
+    Else
+        fieldFormat = " \# """ & fmt & ";(" & fmt & ")"""
     End If
-    FormatValue = result
-End Function
+
+    ' --- Case 1: Inside a table with cells selected ---
+    If Selection.Information(wdWithInTable) Then
+        If Selection.Cells.count > 0 Then
+            Dim cel As Cell
+            For Each cel In Selection.Cells
+                Set rng = cel.Range
+                rng.End = rng.End - 1
+
+                If rng.Fields.count > 0 Then
+                    ' Update field format switches
+                    For Each fld In rng.Fields
+                        code = fld.code.text
+                        If InStr(code, "\#") > 0 Then
+                            code = Left(code, InStr(code, "\#") - 1)
+                        End If
+                        If InStr(code, "\*") > 0 Then
+                            code = Left(code, InStr(code, "\*") - 1)
+                        End If
+                        fld.code.text = Trim(code) & fieldFormat
+                        fld.Update
+                    Next fld
+                    Set rng = cel.Range
+                    rng.End = rng.End - 1
+                    rng.ParagraphFormat.Alignment = wdAlignParagraphRight
+                Else
+                    FormatNumInRange rng, fmt, prefix
+                End If
+            Next cel
+            Exit Sub
+        End If
+    End If
+
+    ' --- Case 2: Any other text selection (body, text box, header, etc.) ---
+    If rng.Fields.count > 0 Then
+        For Each fld In rng.Fields
+            code = fld.code.text
+            If InStr(code, "\#") > 0 Then
+                code = Left(code, InStr(code, "\#") - 1)
+            End If
+            If InStr(code, "\*") > 0 Then
+                code = Left(code, InStr(code, "\*") - 1)
+            End If
+            fld.code.text = Trim(code) & fieldFormat
+            fld.Update
+        Next fld
+        rng.ParagraphFormat.Alignment = wdAlignParagraphRight
+    Else
+        FormatNumInRange rng, fmt, prefix
+    End If
+
+End Sub
+```
+
+### `FormatNumInRange`
+
+```vbnet
+Private Sub FormatNumInRange(rng As Range, fmt As String, prefix As String)
+
+    Dim cellText As String
+    Dim val As Double
+
+    cellText = CleanNumericText(rng.text)
+
+    If IsNumeric(cellText) And Len(cellText) > 0 Then
+        val = CDbl(cellText)
+        rng.text = FormatValue(val, fmt, prefix)
+        rng.Font.Color = wdColorAutomatic
+        rng.ParagraphFormat.Alignment = wdAlignParagraphRight
+    End If
+
+End Sub
 ```
 
 ### `SelFormatDateShort`
@@ -3684,94 +3645,58 @@ End Sub
 ```vbnet
 Private Sub FormatSelectedDates(fmt As String)
 
-    Dim sel As Selection
-    Set sel = ActiveWindow.Selection
+    Dim rng As Range
+    Set rng = Selection.Range
 
-    ' --- Text is highlighted ---
-    If sel.Type = ppSelectionText Then
-        FormatDateInTextRange sel.TextRange, fmt
-        Exit Sub
+    ' --- Case 1: Inside a table with cells selected ---
+    If Selection.Information(wdWithInTable) Then
+        If Selection.Cells.count > 0 Then
+            Dim cel As Cell
+            For Each cel In Selection.Cells
+                Set rng = cel.Range
+                rng.End = rng.End - 1
+                FormatDateInRange rng, fmt
+            Next cel
+            Exit Sub
+        End If
     End If
 
-    ' --- Whole shape(s) selected ---
-    If sel.Type = ppSelectionShapes Then
-        Dim i As Long
-        For i = 1 To sel.ShapeRange.Count
-            FormatDateInShape sel.ShapeRange(i), fmt
-        Next i
-        Exit Sub
-    End If
-
-    MsgBox "Please select text or a shape containing dates.", vbExclamation, "Date Format"
+    ' --- Case 2: Any other text selection ---
+    FormatDateInRange rng, fmt
 
 End Sub
 ```
 
-### `FormatDateInShape`
+### `FormatDateInRange`
 
 ```vbnet
-Private Sub FormatDateInShape(shp As Shape, fmt As String)
+Private Sub FormatDateInRange(rng As Range, fmt As String)
 
-    On Error Resume Next
+    Dim cellText As String
+    cellText = Trim$(rng.text)
 
-    If shp.Type = msoGroup Then
-        Dim subShp As Shape
-        For Each subShp In shp.GroupItems
-            FormatDateInShape subShp, fmt
-        Next subShp
-        Exit Sub
+    If IsDate(cellText) Then
+        rng.text = Format(CDate(cellText), fmt)
     End If
-
-    If shp.HasTable Then
-        Dim r As Long, c As Long
-        For r = 1 To shp.Table.Rows.Count
-            For c = 1 To shp.Table.Columns.Count
-                FormatDateInTextRange shp.Table.Cell(r, c).Shape.TextFrame.TextRange, fmt
-            Next c
-        Next r
-        Exit Sub
-    End If
-
-    If shp.HasTextFrame Then
-        If shp.TextFrame.HasText Then
-            FormatDateInTextRange shp.TextFrame.TextRange, fmt
-        End If
-    End If
-
-    On Error GoTo 0
 
 End Sub
 ```
 
-### `FormatDateInTextRange`
+### `FormatValue`
 
 ```vbnet
-Private Sub FormatDateInTextRange(tr As TextRange, fmt As String)
-
-    On Error Resume Next
-
-    ' Try the whole range as a single date
-    Dim txt As String
-    txt = Trim$(tr.Text)
-
-    If IsDate(txt) Then
-        tr.Text = Format(CDate(txt), fmt)
-        Exit Sub
+Private Function FormatValue(val As Double, fmt As String, prefix As String) As String
+    Dim result As String
+    If val < 0 Then
+        result = "(" & Format(Abs(val), fmt) & ")"
+    Else
+        result = Format(val, fmt)
     End If
-
-    ' Otherwise try each paragraph
-    Dim p As Long
-    For p = tr.Paragraphs.Count To 1 Step -1
-        Dim pTxt As String
-        pTxt = Trim$(tr.Paragraphs(p).Text)
-        If IsDate(pTxt) Then
-            tr.Paragraphs(p).Text = Format(CDate(pTxt), fmt)
-        End If
-    Next p
-
-    On Error GoTo 0
-
-End Sub
+    If Len(prefix) > 0 Then
+        result = prefix & " " & result
+    End If
+    FormatValue = result
+End Function
 ```
 
 ### `CleanNumericText`
@@ -3785,6 +3710,7 @@ Private Function CleanNumericText(s As String) As String
     t = Replace(t, vbTab, "")
     t = Replace(t, vbCr, "")
     t = Replace(t, vbLf, "")
+    t = Replace(t, Chr(7), "")  ' Word table cell end marker
     If InStr(t, "(") > 0 And InStr(t, ")") > 0 Then
         t = Replace(t, "(", "-")
         t = Replace(t, ")", "")
