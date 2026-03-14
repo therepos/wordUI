@@ -1,4 +1,3 @@
-Attribute VB_Name = "Ribbon"
 Public Ribbon As IRibbonUI
 
 Public Sub RibbonOnLoad(r As IRibbonUI)
