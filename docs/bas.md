@@ -3761,19 +3761,23 @@ Sub SelListAlphaRoman()
 End Sub
 ```
 
-### `SelFormatNumDecimal`
-
-```vbnet
-Public Sub SelFormatNumDecimal()
-    FormatSelectedNumbers "#,##0.00", ""
-End Sub
-```
-
 ### `SelFormatNumNoDecimal`
 
 ```vbnet
 Public Sub SelFormatNumNoDecimal()
+    SavePref "LastNumFmt", "#,##0"
+    SavePref "LastNumPrefix", ""
     FormatSelectedNumbers "#,##0", ""
+End Sub
+```
+
+### `SelFormatNumDecimal`
+
+```vbnet
+Public Sub SelFormatNumDecimal()
+    SavePref "LastNumFmt", "#,##0.00"
+    SavePref "LastNumPrefix", ""
+    FormatSelectedNumbers "#,##0.00", ""
 End Sub
 ```
 
@@ -3781,7 +3785,19 @@ End Sub
 
 ```vbnet
 Public Sub SelFormatNumDollar()
+    SavePref "LastNumFmt", "#,##0.00"
+    SavePref "LastNumPrefix", "$"
     FormatSelectedNumbers "#,##0.00", "$"
+End Sub
+```
+
+### `SelFormatNumRepeat`
+
+```vbnet
+Public Sub SelFormatNumRepeat()
+    FormatSelectedNumbers _
+        GetPref("LastNumFmt", "#,##0.00"), _
+        GetPref("LastNumPrefix", "")
 End Sub
 ```
 
@@ -3880,6 +3896,7 @@ End Sub
 
 ```vbnet
 Public Sub SelFormatDateShort()
+    SavePref "LastDateFmt", "DD-MMM-YY"
     FormatSelectedDates "DD-MMM-YY"
 End Sub
 ```
@@ -3888,7 +3905,16 @@ End Sub
 
 ```vbnet
 Public Sub SelFormatDateLong()
+    SavePref "LastDateFmt", "DD-MMMM-YYYY"
     FormatSelectedDates "DD-MMMM-YYYY"
+End Sub
+```
+
+### `SelFormatDateRepeat`
+
+```vbnet
+Public Sub SelFormatDateRepeat()
+    FormatSelectedDates GetPref("LastDateFmt", "DD-MMM-YY")
 End Sub
 ```
 
@@ -4023,5 +4049,21 @@ Private Function CleanNumericText(s As String) As String
         t = Replace(t, ")", "")
     End If
     CleanNumericText = Trim$(t)
+End Function
+```
+
+### `SavePref`
+
+```vbnet
+Private Sub SavePref(key As String, val As String)
+    SaveSetting "WordUI", "Preferences", key, val
+End Sub
+```
+
+### `GetPref`
+
+```vbnet
+Private Function GetPref(key As String, defaultVal As String) As String
+    GetPref = GetSetting("WordUI", "Preferences", key, defaultVal)
 End Function
 ```
