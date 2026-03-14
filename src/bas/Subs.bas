@@ -1,6 +1,23 @@
 Attribute VB_Name = "Subs"
 Option Explicit
 
+' =============================================================================
+' MODULE: Subs
+' Purpose: General formatting operations that work anywhere in the document
+'          (body text, text boxes, headers, footers, etc.)
+'
+' Contents:
+'   - DocFontSizeDecrease / DocFontSizeIncrease
+'   - DocSpacingSingle
+'   - SelListAlphaRoman
+'   - SelFormatNumDecimal / SelFormatNumNoDecimal / SelFormatNumDollar
+'   - SelFormatDateShort / SelFormatDateLong
+'   - ViewSplitVerticalToggle
+' =============================================================================
+
+
+' ===== FONT SIZE =============================================================
+
 Sub DocFontSizeDecrease()
 
     Dim para As Paragraph
@@ -30,6 +47,9 @@ Sub DocFontSizeIncrease()
     Application.ScreenUpdating = True
 
 End Sub
+
+
+' ===== SPACING ===============================================================
 
 Sub DocSpacingSingle()
 
@@ -64,29 +84,8 @@ Sub DocSpacingSingle()
 
 End Sub
 
-Sub DocTableMargin()
 
-    Dim tbl As Table
-    Dim topMargin As Single, bottomMargin As Single
-    Dim leftMargin As Single, rightMargin As Single
-
-    Application.ScreenUpdating = False
-    topMargin = CentimetersToPoints(0.1)
-    bottomMargin = CentimetersToPoints(0.1)
-    leftMargin = CentimetersToPoints(0.19)
-    rightMargin = CentimetersToPoints(0.19)
-
-    For Each tbl In ActiveDocument.Tables
-        With tbl
-            .TopPadding = topMargin
-            .BottomPadding = bottomMargin
-            .LeftPadding = leftMargin
-            .RightPadding = rightMargin
-        End With
-    Next tbl
-    Application.ScreenUpdating = True
-
-End Sub
+' ===== LIST — ALPHA / ROMAN ==================================================
 
 Sub SelListAlphaRoman()
 
@@ -148,75 +147,160 @@ Sub SelListAlphaRoman()
 
 End Sub
 
-Sub SelTableBorder()
 
-    Dim tbl As Table
-    Dim bTypes As Variant
-    Dim i As Long
+' ===== NUMBER FORMATTING — WORKS ON ANY SELECTED TEXT ========================
 
-    If Not Selection.Information(wdWithInTable) Then
-        MsgBox "Please place the cursor inside a table.", vbExclamation
-        Exit Sub
-    End If
-
-    Set tbl = Selection.Tables(1)
-
-    bTypes = Array(wdBorderLeft, wdBorderRight, wdBorderTop, wdBorderBottom, wdBorderHorizontal, wdBorderVertical)
-
-    For i = LBound(bTypes) To UBound(bTypes)
-        With tbl.Borders(bTypes(i))
-            .LineStyle = wdLineStyleSingle
-            .Color = wdColorAutomatic
-            .LineWidth = wdLineWidth025pt
-        End With
-    Next i
-
-    tbl.Borders(wdBorderDiagonalDown).LineStyle = wdLineStyleNone
-    tbl.Borders(wdBorderDiagonalUp).LineStyle = wdLineStyleNone
-
+Public Sub SelFormatNumDecimal()
+    FormatSelectedNumbers "#,##0.00", ""
 End Sub
 
-Sub SelTableMargin()
+Public Sub SelFormatNumNoDecimal()
+    FormatSelectedNumbers "#,##0", ""
+End Sub
 
-    Dim tbl As Table
+Public Sub SelFormatNumDollar()
+    FormatSelectedNumbers "#,##0.00", "$"
+End Sub
 
-    Const PAD_TOP_CM As Double = 0.05
-    Const PAD_BOTTOM_CM As Double = 0.05
-    Const PAD_LEFT_CM As Double = 0.19
-    Const PAD_RIGHT_CM As Double = 0.19
+Private Sub FormatSelectedNumbers(fmt As String, prefix As String)
 
+    Dim rng As Range
+    Dim fld As Field
+    Dim code As String
+    Dim fieldFormat As String
+
+    Set rng = Selection.Range
+
+    ' Build Word field format string with bracket negatives
+    If Len(prefix) > 0 Then
+        fieldFormat = " \# ""'" & prefix & " '" & fmt & ";'" & prefix & " '(" & fmt & ")"""
+    Else
+        fieldFormat = " \# """ & fmt & ";(" & fmt & ")"""
+    End If
+
+    ' --- Case 1: Inside a table with cells selected ---
     If Selection.Information(wdWithInTable) Then
+        If Selection.Cells.Count > 0 Then
+            Dim cel As Cell
+            For Each cel In Selection.Cells
+                Set rng = cel.Range
+                rng.End = rng.End - 1
 
-        If Selection.Cells.count > 0 Then
-            Set tbl = Selection.Cells(1).Range.Tables(1)
-        ElseIf Selection.Range.Tables.count > 0 Then
-            Set tbl = Selection.Range.Tables(Selection.Range.Tables.count)
-        Else
-            MsgBox "Couldn't resolve the table from the selection.", vbExclamation
+                If rng.Fields.Count > 0 Then
+                    For Each fld In rng.Fields
+                        code = fld.code.Text
+                        If InStr(code, "\#") > 0 Then
+                            code = Left(code, InStr(code, "\#") - 1)
+                        End If
+                        If InStr(code, "\*") > 0 Then
+                            code = Left(code, InStr(code, "\*") - 1)
+                        End If
+                        fld.code.Text = Trim(code) & fieldFormat
+                        fld.Update
+                    Next fld
+                    Set rng = cel.Range
+                    rng.End = rng.End - 1
+                    rng.ParagraphFormat.Alignment = wdAlignParagraphRight
+                Else
+                    FormatNumInRange rng, fmt, prefix
+                End If
+            Next cel
             Exit Sub
         End If
+    End If
 
-        With tbl
-            .TopPadding = CentimetersToPoints(PAD_TOP_CM)
-            .BottomPadding = CentimetersToPoints(PAD_BOTTOM_CM)
-            .LeftPadding = CentimetersToPoints(PAD_LEFT_CM)
-            .RightPadding = CentimetersToPoints(PAD_RIGHT_CM)
-        End With
-
+    ' --- Case 2: Any other text selection (body, text box, header, etc.) ---
+    If rng.Fields.Count > 0 Then
+        For Each fld In rng.Fields
+            code = fld.code.Text
+            If InStr(code, "\#") > 0 Then
+                code = Left(code, InStr(code, "\#") - 1)
+            End If
+            If InStr(code, "\*") > 0 Then
+                code = Left(code, InStr(code, "\*") - 1)
+            End If
+            fld.code.Text = Trim(code) & fieldFormat
+            fld.Update
+        Next fld
+        rng.ParagraphFormat.Alignment = wdAlignParagraphRight
     Else
-        MsgBox "Place the cursor inside the table you want to format.", vbExclamation
+        FormatNumInRange rng, fmt, prefix
     End If
 
 End Sub
+
+Private Sub FormatNumInRange(rng As Range, fmt As String, prefix As String)
+
+    Dim cellText As String
+    Dim val As Double
+
+    cellText = CleanNumericText(rng.Text)
+
+    If IsNumeric(cellText) And Len(cellText) > 0 Then
+        val = CDbl(cellText)
+        rng.Text = FormatValue(val, fmt, prefix)
+        rng.Font.Color = wdColorAutomatic
+        rng.ParagraphFormat.Alignment = wdAlignParagraphRight
+    End If
+
+End Sub
+
+
+' ===== DATE FORMATTING — WORKS ON ANY SELECTED TEXT ==========================
+
+Public Sub SelFormatDateShort()
+    FormatSelectedDates "DD-MMM-YY"
+End Sub
+
+Public Sub SelFormatDateLong()
+    FormatSelectedDates "DD-MMMM-YYYY"
+End Sub
+
+Private Sub FormatSelectedDates(fmt As String)
+
+    Dim rng As Range
+    Set rng = Selection.Range
+
+    ' --- Case 1: Inside a table with cells selected ---
+    If Selection.Information(wdWithInTable) Then
+        If Selection.Cells.Count > 0 Then
+            Dim cel As Cell
+            For Each cel In Selection.Cells
+                Set rng = cel.Range
+                rng.End = rng.End - 1
+                FormatDateInRange rng, fmt
+            Next cel
+            Exit Sub
+        End If
+    End If
+
+    ' --- Case 2: Any other text selection ---
+    FormatDateInRange rng, fmt
+
+End Sub
+
+Private Sub FormatDateInRange(rng As Range, fmt As String)
+
+    Dim cellText As String
+    cellText = Trim$(rng.Text)
+
+    If IsDate(cellText) Then
+        rng.Text = Format(CDate(cellText), fmt)
+    End If
+
+End Sub
+
+
+' ===== VIEW ==================================================================
 
 Sub ViewSplitVerticalToggle()
 
     Dim doc As Document
     Set doc = ActiveDocument
 
-    If doc.Windows.count > 1 Then
-        Do While doc.Windows.count > 1
-            doc.Windows(doc.Windows.count).Close
+    If doc.Windows.Count > 1 Then
+        Do While doc.Windows.Count > 1
+            doc.Windows(doc.Windows.Count).Close
         Loop
         doc.Windows(1).Activate
         doc.Windows(1).WindowState = wdWindowStateMaximize
@@ -260,3 +344,34 @@ Sub ViewSplitVerticalToggle()
 
 End Sub
 
+
+' ===== HELPERS ===============================================================
+
+Private Function FormatValue(val As Double, fmt As String, prefix As String) As String
+    Dim result As String
+    If val < 0 Then
+        result = "(" & Format(Abs(val), fmt) & ")"
+    Else
+        result = Format(val, fmt)
+    End If
+    If Len(prefix) > 0 Then
+        result = prefix & " " & result
+    End If
+    FormatValue = result
+End Function
+
+Private Function CleanNumericText(s As String) As String
+    Dim t As String
+    t = Trim$(s)
+    t = Replace(t, ",", "")
+    t = Replace(t, "$", "")
+    t = Replace(t, vbTab, "")
+    t = Replace(t, vbCr, "")
+    t = Replace(t, vbLf, "")
+    t = Replace(t, Chr(7), "")  ' Word table cell end marker
+    If InStr(t, "(") > 0 And InStr(t, ")") > 0 Then
+        t = Replace(t, "(", "-")
+        t = Replace(t, ")", "")
+    End If
+    CleanNumericText = Trim$(t)
+End Function

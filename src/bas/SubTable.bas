@@ -1,11 +1,18 @@
+Attribute VB_Name = "SubTable"
 Option Explicit
 
 ' =============================================================================
 ' MODULE: SubTable
-' Purpose: Table cell operations - formulas, number formatting, date formatting
-'          Number and date formatting works on ANY selected text (table cells,
-'          text boxes, headers, footers, body text, etc.)
+' Purpose: Table-specific operations (formulas, borders, margins)
+'          Requires cursor to be inside a table.
+'
+' Contents:
+'   - SelSumColumn / SelAverageColumn / SelCountColumn
+'   - SelTableBorder
+'   - SelTableMargin
+'   - DocTableMargin
 ' =============================================================================
+
 
 ' ===== FORMULAS ==============================================================
 
@@ -43,7 +50,7 @@ Private Sub InsertTableFormula(funcName As String)
     Set cel = Selection.Cells(1)
 
     ' If cell already has a field, just refresh it
-    If cel.Range.Fields.count > 0 Then
+    If cel.Range.Fields.Count > 0 Then
         For Each fld In cel.Range.Fields
             fld.Update
         Next fld
@@ -67,14 +74,14 @@ Private Sub InsertTableFormula(funcName As String)
         If rng Is Nothing Then GoTo NextRow
 
         rng.End = rng.End - 1
-        cellText = Trim(rng.text)
+        cellText = Trim(rng.Text)
 
-        ' Strip formatting: commas, dollar signs, brackets to minus
+        ' Strip formatting
         cellText = CleanNumericText(cellText)
 
         ' Also read formula field results
-        If tbl.Cell(r, col).Range.Fields.count > 0 Then
-            fldResult = tbl.Cell(r, col).Range.Fields(1).result.text
+        If tbl.Cell(r, col).Range.Fields.Count > 0 Then
+            fldResult = tbl.Cell(r, col).Range.Fields(1).Result.Text
             fldResult = CleanNumericText(fldResult)
             If IsNumeric(fldResult) Then
                 cellText = fldResult
@@ -119,169 +126,104 @@ NextRow:
     Set fld = rng.Fields.Add( _
         Range:=rng, _
         Type:=wdFieldEmpty, _
-        text:="= " & Format(finalVal, "0.00"), _
+        Text:="= " & Format(finalVal, "0.00"), _
         PreserveFormatting:=False)
 
     fld.Update
 
 End Sub
 
-' ===== NUMBER FORMATTING — WORKS ON ANY SELECTED TEXT ========================
 
-Public Sub SelFormatNumDecimal()
-    FormatSelectedNumbers "#,##0.00", ""
+' ===== BORDERS ===============================================================
+
+Sub SelTableBorder()
+
+    Dim tbl As Table
+    Dim bTypes As Variant
+    Dim i As Long
+
+    If Not Selection.Information(wdWithInTable) Then
+        MsgBox "Please place the cursor inside a table.", vbExclamation
+        Exit Sub
+    End If
+
+    Set tbl = Selection.Tables(1)
+
+    bTypes = Array(wdBorderLeft, wdBorderRight, wdBorderTop, _
+                   wdBorderBottom, wdBorderHorizontal, wdBorderVertical)
+
+    For i = LBound(bTypes) To UBound(bTypes)
+        With tbl.Borders(bTypes(i))
+            .LineStyle = wdLineStyleSingle
+            .Color = wdColorAutomatic
+            .LineWidth = wdLineWidth025pt
+        End With
+    Next i
+
+    tbl.Borders(wdBorderDiagonalDown).LineStyle = wdLineStyleNone
+    tbl.Borders(wdBorderDiagonalUp).LineStyle = wdLineStyleNone
+
 End Sub
 
-Public Sub SelFormatNumNoDecimal()
-    FormatSelectedNumbers "#,##0", ""
-End Sub
 
-Public Sub SelFormatNumDollar()
-    FormatSelectedNumbers "#,##0.00", "$"
-End Sub
+' ===== MARGINS — SELECTED TABLE ==============================================
 
-Private Sub FormatSelectedNumbers(fmt As String, prefix As String)
+Sub SelTableMargin()
 
-    Dim rng As Range
-    Dim fld As Field
-    Dim code As String
-    Dim fieldFormat As String
+    Dim tbl As Table
 
-    Set rng = Selection.Range
+    Const PAD_TOP_CM As Double = 0.05
+    Const PAD_BOTTOM_CM As Double = 0.05
+    Const PAD_LEFT_CM As Double = 0.19
+    Const PAD_RIGHT_CM As Double = 0.19
 
-    ' Build Word field format string with bracket negatives
-    If Len(prefix) > 0 Then
-        fieldFormat = " \# ""'" & prefix & " '" & fmt & ";'" & prefix & " '(" & fmt & ")"""
+    If Not Selection.Information(wdWithInTable) Then
+        MsgBox "Place the cursor inside the table you want to format.", vbExclamation
+        Exit Sub
+    End If
+
+    If Selection.Cells.Count > 0 Then
+        Set tbl = Selection.Cells(1).Range.Tables(1)
+    ElseIf Selection.Range.Tables.Count > 0 Then
+        Set tbl = Selection.Range.Tables(Selection.Range.Tables.Count)
     Else
-        fieldFormat = " \# """ & fmt & ";(" & fmt & ")"""
+        MsgBox "Couldn't resolve the table from the selection.", vbExclamation
+        Exit Sub
     End If
 
-    ' --- Case 1: Inside a table with cells selected ---
-    If Selection.Information(wdWithInTable) Then
-        If Selection.Cells.count > 0 Then
-            Dim cel As Cell
-            For Each cel In Selection.Cells
-                Set rng = cel.Range
-                rng.End = rng.End - 1
-
-                If rng.Fields.count > 0 Then
-                    ' Update field format switches
-                    For Each fld In rng.Fields
-                        code = fld.code.text
-                        If InStr(code, "\#") > 0 Then
-                            code = Left(code, InStr(code, "\#") - 1)
-                        End If
-                        If InStr(code, "\*") > 0 Then
-                            code = Left(code, InStr(code, "\*") - 1)
-                        End If
-                        fld.code.text = Trim(code) & fieldFormat
-                        fld.Update
-                    Next fld
-                    Set rng = cel.Range
-                    rng.End = rng.End - 1
-                    rng.ParagraphFormat.Alignment = wdAlignParagraphRight
-                Else
-                    FormatNumInRange rng, fmt, prefix
-                End If
-            Next cel
-            Exit Sub
-        End If
-    End If
-
-    ' --- Case 2: Any other text selection (body, text box, header, etc.) ---
-    If rng.Fields.count > 0 Then
-        For Each fld In rng.Fields
-            code = fld.code.text
-            If InStr(code, "\#") > 0 Then
-                code = Left(code, InStr(code, "\#") - 1)
-            End If
-            If InStr(code, "\*") > 0 Then
-                code = Left(code, InStr(code, "\*") - 1)
-            End If
-            fld.code.text = Trim(code) & fieldFormat
-            fld.Update
-        Next fld
-        rng.ParagraphFormat.Alignment = wdAlignParagraphRight
-    Else
-        FormatNumInRange rng, fmt, prefix
-    End If
+    With tbl
+        .TopPadding = CentimetersToPoints(PAD_TOP_CM)
+        .BottomPadding = CentimetersToPoints(PAD_BOTTOM_CM)
+        .LeftPadding = CentimetersToPoints(PAD_LEFT_CM)
+        .RightPadding = CentimetersToPoints(PAD_RIGHT_CM)
+    End With
 
 End Sub
 
-Private Sub FormatNumInRange(rng As Range, fmt As String, prefix As String)
 
-    Dim cellText As String
-    Dim val As Double
+' ===== MARGINS — ALL TABLES IN DOCUMENT ======================================
 
-    cellText = CleanNumericText(rng.text)
+Sub DocTableMargin()
 
-    If IsNumeric(cellText) And Len(cellText) > 0 Then
-        val = CDbl(cellText)
-        rng.text = FormatValue(val, fmt, prefix)
-        rng.Font.Color = wdColorAutomatic
-        rng.ParagraphFormat.Alignment = wdAlignParagraphRight
-    End If
+    Dim tbl As Table
 
-End Sub
+    Application.ScreenUpdating = False
 
-' ===== DATE FORMATTING — WORKS ON ANY SELECTED TEXT ==========================
+    For Each tbl In ActiveDocument.Tables
+        With tbl
+            .TopPadding = CentimetersToPoints(0.1)
+            .BottomPadding = CentimetersToPoints(0.1)
+            .LeftPadding = CentimetersToPoints(0.19)
+            .RightPadding = CentimetersToPoints(0.19)
+        End With
+    Next tbl
 
-Public Sub SelFormatDateShort()
-    FormatSelectedDates "DD-MMM-YY"
-End Sub
-
-Public Sub SelFormatDateLong()
-    FormatSelectedDates "DD-MMMM-YYYY"
-End Sub
-
-Private Sub FormatSelectedDates(fmt As String)
-
-    Dim rng As Range
-    Set rng = Selection.Range
-
-    ' --- Case 1: Inside a table with cells selected ---
-    If Selection.Information(wdWithInTable) Then
-        If Selection.Cells.count > 0 Then
-            Dim cel As Cell
-            For Each cel In Selection.Cells
-                Set rng = cel.Range
-                rng.End = rng.End - 1
-                FormatDateInRange rng, fmt
-            Next cel
-            Exit Sub
-        End If
-    End If
-
-    ' --- Case 2: Any other text selection ---
-    FormatDateInRange rng, fmt
+    Application.ScreenUpdating = True
 
 End Sub
 
-Private Sub FormatDateInRange(rng As Range, fmt As String)
 
-    Dim cellText As String
-    cellText = Trim$(rng.text)
-
-    If IsDate(cellText) Then
-        rng.text = Format(CDate(cellText), fmt)
-    End If
-
-End Sub
-
-' ===== HELPERS ===============================================================
-
-Private Function FormatValue(val As Double, fmt As String, prefix As String) As String
-    Dim result As String
-    If val < 0 Then
-        result = "(" & Format(Abs(val), fmt) & ")"
-    Else
-        result = Format(val, fmt)
-    End If
-    If Len(prefix) > 0 Then
-        result = prefix & " " & result
-    End If
-    FormatValue = result
-End Function
+' ===== HELPER ================================================================
 
 Private Function CleanNumericText(s As String) As String
     Dim t As String
@@ -298,5 +240,3 @@ Private Function CleanNumericText(s As String) As String
     End If
     CleanNumericText = Trim$(t)
 End Function
-
-
