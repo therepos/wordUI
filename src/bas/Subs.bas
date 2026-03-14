@@ -1,3 +1,4 @@
+Attribute VB_Name = "Subs"
 Option Explicit
 
 ' =============================================================================
@@ -9,10 +10,11 @@ Option Explicit
 '   - DocFontSizeDecrease / DocFontSizeIncrease
 '   - DocSpacingSingle
 '   - SelListAlphaRoman
-'   - SelFormatNumDecimal / SelFormatNumNoDecimal / SelFormatNumDollar
-'   - SelFormatNumRepeat  (splitButton — repeats last-used number format)
-'   - SelFormatDateShort / SelFormatDateLong
-'   - SelFormatDateRepeat (splitButton — repeats last-used date format)
+'   - RunPresetFontArial / RunPresetFontEY / RunPresetFontTimes /
+'     RunPresetFontCalibri / RunPresetFontRepeat
+'   - SelFormatNumDecimal / SelFormatNumNoDecimal / SelFormatNumDollar /
+'     SelFormatNumRepeat
+'   - SelFormatDateShort / SelFormatDateLong / SelFormatDateRepeat
 '   - ViewSplitVerticalToggle
 ' =============================================================================
 
@@ -145,6 +147,51 @@ Sub SelListAlphaRoman()
         ContinuePreviousList:=False, _
         ApplyTo:=wdListApplyToSelection, _
         DefaultListBehavior:=wdWord10ListBehavior
+
+End Sub
+
+
+' ===== FONT PRESET ===========================================================
+
+Public Sub RunPresetFontArial()
+    SavePref "LastFont", "Arial"
+    ApplyFontToDocument "Arial"
+End Sub
+
+Public Sub RunPresetFontEY()
+    SavePref "LastFont", "EYInterstate Light"
+    ApplyFontToDocument "EYInterstate Light"
+End Sub
+
+Public Sub RunPresetFontTimes()
+    SavePref "LastFont", "Times New Roman"
+    ApplyFontToDocument "Times New Roman"
+End Sub
+
+Public Sub RunPresetFontCalibri()
+    SavePref "LastFont", "Calibri"
+    ApplyFontToDocument "Calibri"
+End Sub
+
+Public Sub RunPresetFontRepeat()
+    ApplyFontToDocument GetPref("LastFont", "Arial")
+End Sub
+
+Private Sub ApplyFontToDocument(f As String)
+
+    Dim sr As Range
+
+    Application.ScreenUpdating = False
+
+    For Each sr In ActiveDocument.StoryRanges
+        Do
+            sr.Font.Name = f
+            Set sr = sr.NextStoryRange
+        Loop Until sr Is Nothing
+    Next sr
+
+    Application.ScreenUpdating = True
+    MsgBox "Font applied: " & f, vbInformation, "Font"
 
 End Sub
 
@@ -397,8 +444,8 @@ End Function
 
 
 ' ===== PREFERENCE STORAGE ====================================================
-' Uses Windows registry (SaveSetting/GetSetting) so preferences persist
-' across all documents for the user.
+' Uses Windows registry (HKEY_CURRENT_USER — no admin rights needed)
+' so preferences persist across all documents for the user.
 
 Private Sub SavePref(key As String, val As String)
     SaveSetting "WordUI", "Preferences", key, val
