@@ -3761,6 +3761,72 @@ Sub SelListAlphaRoman()
 End Sub
 ```
 
+### `RunPresetFontArial`
+
+```vbnet
+Public Sub RunPresetFontArial()
+    SavePref "LastFont", "Arial"
+    ApplyFontToDocument "Arial"
+End Sub
+```
+
+### `RunPresetFontEY`
+
+```vbnet
+Public Sub RunPresetFontEY()
+    SavePref "LastFont", "EYInterstate Light"
+    ApplyFontToDocument "EYInterstate Light"
+End Sub
+```
+
+### `RunPresetFontTimes`
+
+```vbnet
+Public Sub RunPresetFontTimes()
+    SavePref "LastFont", "Times New Roman"
+    ApplyFontToDocument "Times New Roman"
+End Sub
+```
+
+### `RunPresetFontCalibri`
+
+```vbnet
+Public Sub RunPresetFontCalibri()
+    SavePref "LastFont", "Calibri"
+    ApplyFontToDocument "Calibri"
+End Sub
+```
+
+### `RunPresetFontRepeat`
+
+```vbnet
+Public Sub RunPresetFontRepeat()
+    ApplyFontToDocument GetPref("LastFont", "Arial")
+End Sub
+```
+
+### `ApplyFontToDocument`
+
+```vbnet
+Private Sub ApplyFontToDocument(f As String)
+
+    Dim sr As Range
+
+    Application.ScreenUpdating = False
+
+    For Each sr In ActiveDocument.StoryRanges
+        Do
+            sr.Font.Name = f
+            Set sr = sr.NextStoryRange
+        Loop Until sr Is Nothing
+    Next sr
+
+    Application.ScreenUpdating = True
+    MsgBox "Font applied: " & f, vbInformation, "Font"
+
+End Sub
+```
+
 ### `SelFormatNumNoDecimal`
 
 ```vbnet
